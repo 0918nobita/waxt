@@ -1,0 +1,1 @@
+﻿printfn "WAXT Compiler"
