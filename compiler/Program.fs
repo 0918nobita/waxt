@@ -1,48 +1,42 @@
 ﻿type Token =
     | LeftParen
     | RightParen
-    | LeftSquareBracket
-    | RightSquareBracket
+    | LeftBracket
+    | RightBracket
     | Str of string
 
 type LexState =
     | Initial
     | ReadingStr of list<char>
 
-let charListToStr = List.toArray >> System.String
-
-let isWhiteSpace = System.Char.IsWhiteSpace
-
 let lex (src: string) =
+    let charsToStr = List.rev >> List.toArray >> System.String
+
     let folder (tokens, state) c =
+        let isWhiteSpace = System.Char.IsWhiteSpace
+
         match state with
         | Initial ->
             match c with
             | '(' -> (LeftParen :: tokens, Initial)
             | ')' -> (RightParen :: tokens, Initial)
-            | '[' -> (LeftSquareBracket :: tokens, Initial)
-            | ']' -> (RightSquareBracket :: tokens, Initial)
+            | '[' -> (LeftBracket :: tokens, Initial)
+            | ']' -> (RightBracket :: tokens, Initial)
             | c when isWhiteSpace c -> (tokens, Initial)
             | c -> (tokens, ReadingStr [ c ])
         | ReadingStr cs ->
             match c with
-            | '(' -> (LeftParen :: Str(charListToStr cs) :: tokens, Initial)
-            | ')' -> (RightParen :: Str(charListToStr cs) :: tokens, Initial)
-            | '[' ->
-                (LeftSquareBracket
-                 :: Str(charListToStr cs) :: tokens,
-                 Initial)
-            | ']' ->
-                (RightSquareBracket
-                 :: Str(charListToStr cs) :: tokens,
-                 Initial)
-            | c when isWhiteSpace c -> (Str(charListToStr cs) :: tokens, Initial)
+            | '(' -> (LeftParen :: Str(charsToStr cs) :: tokens, Initial)
+            | ')' -> (RightParen :: Str(charsToStr cs) :: tokens, Initial)
+            | '[' -> (LeftBracket :: Str(charsToStr cs) :: tokens, Initial)
+            | ']' -> (RightBracket :: Str(charsToStr cs) :: tokens, Initial)
+            | c when isWhiteSpace c -> (Str(charsToStr cs) :: tokens, Initial)
             | c -> (tokens, ReadingStr(c :: cs))
 
     let processFinalState (tokens, state) =
         match state with
         | Initial -> tokens
-        | ReadingStr cs -> (Str(charListToStr cs) :: tokens)
+        | ReadingStr cs -> (Str(charsToStr cs) :: tokens)
 
     src
     |> Seq.fold folder ([], Initial)
@@ -51,17 +45,23 @@ let lex (src: string) =
 
 type SExpr =
     | Atom of string
-    | List of list<SExpr>
+    | ParenList of list<SExpr>
+    | BracketList of list<SExpr>
 
 module SExpr =
     let rec toString =
         function
         | Atom str -> str
-        | List list ->
+        | ParenList list ->
             list
             |> List.map toString
             |> String.concat " "
             |> sprintf "(%s)"
+        | BracketList list ->
+            list
+            |> List.map toString
+            |> String.concat " "
+            |> sprintf "[%s]"
 
 open FsToolkit.ErrorHandling
 
@@ -75,11 +75,20 @@ let rec parse (tokens: list<Token>) : Result<SExpr * list<Token>, string> =
 
             return!
                 match rest with
-                | RightParen :: rest -> Ok(List exprs, rest)
+                | RightParen :: rest -> Ok(ParenList exprs, rest)
                 | _ -> Error "Expected ')'"
         }
     | RightParen :: _ -> Error "Unexpected ')'"
-    | _ -> failwith "not implemented"
+    | LeftBracket :: rest ->
+        result {
+            let! (exprs, rest) = parseMany rest
+
+            return!
+                match rest with
+                | RightBracket :: rest -> Ok(BracketList exprs, rest)
+                | _ -> Error "Expected ']'"
+        }
+    | RightBracket :: _ -> Error "Unexpected ']'"
 
 and parseMany (tokens: list<Token>) : Result<list<SExpr> * list<Token>, string> =
     match tokens with
@@ -93,5 +102,7 @@ and parseMany (tokens: list<Token>) : Result<list<SExpr> * list<Token>, string> 
                 return (expr :: exprs, rest)
             }
 
-let input = "(* (+ 1 2) 4)"
+let input =
+    "(func add-and-store [addr i32 x i32 y i32] (i32.store addr (i32.add x y)))"
+
 input |> lex |> parse |> printfn "%A"
