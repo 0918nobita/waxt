@@ -1,8 +1,4 @@
-﻿printfn "WAXT Compiler"
-
-let input = "(+ 1 2)"
-
-type Token =
+﻿type Token =
     | LeftParen
     | RightParen
     | LeftSquareBracket
@@ -53,4 +49,49 @@ let lex (src: string) =
     |> processFinalState
     |> List.rev
 
-printfn "%A" <| lex input
+type SExpr =
+    | Atom of string
+    | List of list<SExpr>
+
+module SExpr =
+    let rec toString =
+        function
+        | Atom str -> str
+        | List list ->
+            list
+            |> List.map toString
+            |> String.concat " "
+            |> sprintf "(%s)"
+
+open FsToolkit.ErrorHandling
+
+let rec parse (tokens: list<Token>) : Result<SExpr * list<Token>, string> =
+    match tokens with
+    | [] -> Error "Unexpected end of input"
+    | (Str str) :: rest -> Ok(Atom str, rest)
+    | LeftParen :: rest ->
+        result {
+            let! (exprs, rest) = parseMany rest
+
+            return!
+                match rest with
+                | RightParen :: rest -> Ok(List exprs, rest)
+                | _ -> Error "Expected ')'"
+        }
+    | RightParen :: _ -> Error "Unexpected ')'"
+    | _ -> failwith "not implemented"
+
+and parseMany (tokens: list<Token>) : Result<list<SExpr> * list<Token>, string> =
+    match tokens with
+    | [] -> Ok([], [])
+    | _ ->
+        match parse tokens with
+        | Error _ -> Ok([], tokens)
+        | Ok (expr, rest) ->
+            result {
+                let! (exprs, rest) = parseMany rest
+                return (expr :: exprs, rest)
+            }
+
+let input = "(* (+ 1 2) 4)"
+input |> lex |> parse |> printfn "%A"
