@@ -1,4 +1,4 @@
-module Waxt.Compiler.Parse
+module Waxt.Compiler.ParseSExpr
 
 open FsToolkit.ErrorHandling
 open SExpr
@@ -35,7 +35,7 @@ let rec parseSExpr: list<Token> -> ParseResult<SExpr> =
         }
     | RightBracket :: _ -> Error UnexpectedRightBracket
 
-and parseManySExpr: list<Token> -> ParseResult<list<SExpr>> =
+and private parseManySExpr: list<Token> -> ParseResult<list<SExpr>> =
     function
     | [] -> Ok([], [])
     | tokens ->

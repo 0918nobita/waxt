@@ -9,7 +9,9 @@
     <Compile Include="Token.fs" />
     <Compile Include="Lex.fs" />
     <Compile Include="SExpr.fs" />
-    <Compile Include="Parse.fs" />
+    <Compile Include="ParseSExpr.fs" />
+    <Compile Include="Stmt.fs" />
+    <Compile Include="ParseStmt.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
