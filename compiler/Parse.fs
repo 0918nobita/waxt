@@ -16,35 +16,29 @@ type ParseSuccess<'T> = 'T * RestOfTokens
 
 type ParseResult<'T> = Result<ParseSuccess<'T>, ParseError>
 
-let rec parseSExpr (tokens: list<Token>) : ParseResult<SExpr> =
-    match tokens with
+let rec parseSExpr: list<Token> -> ParseResult<SExpr> =
+    function
     | [] -> Error UnexpectedEndOfInput
     | (Str str) :: rest -> Ok(Atom str, rest)
     | LeftParen :: rest ->
         result {
-            let! (exprs, rest) = parseManySExpr rest
-
-            return!
-                match rest with
-                | RightParen :: rest -> Ok(ParenList exprs, rest)
-                | _ -> Error ExpectedRightParen
+            match! parseManySExpr rest with
+            | (exprs, RightParen :: rest) -> return (ParenList exprs, rest)
+            | _ -> return! Error ExpectedRightParen
         }
     | RightParen :: _ -> Error UnexpectedRightParen
     | LeftBracket :: rest ->
         result {
-            let! (exprs, rest) = parseManySExpr rest
-
-            return!
-                match rest with
-                | RightBracket :: rest -> Ok(BracketList exprs, rest)
-                | _ -> Error ExpectedRightBracket
+            match! parseManySExpr rest with
+            | (exprs, RightBracket :: rest) -> return (BracketList exprs, rest)
+            | _ -> return! Error ExpectedRightBracket
         }
     | RightBracket :: _ -> Error UnexpectedRightBracket
 
-and parseManySExpr (tokens: list<Token>) : ParseResult<list<SExpr>> =
-    match tokens with
+and parseManySExpr: list<Token> -> ParseResult<list<SExpr>> =
+    function
     | [] -> Ok([], [])
-    | _ ->
+    | tokens ->
         match parseSExpr tokens with
         | Error _ -> Ok([], tokens)
         | Ok (expr, rest) ->
