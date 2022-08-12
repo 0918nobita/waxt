@@ -17,3 +17,12 @@ type Token =
             | LeftBracket point
             | RightBracket point -> Range.fromPoint point
             | Str (range, _) -> range
+
+module Token =
+    let toString =
+        function
+        | LeftParen _ -> "("
+        | RightParen _ -> ")"
+        | LeftBracket _ -> "["
+        | RightBracket _ -> "]"
+        | Str (_, str) -> str

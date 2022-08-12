@@ -1,23 +1,15 @@
 ﻿module Waxt.Compiler.Program
 
-type CompileError =
-    | SExprParserError of ParseSExpr.ParseError
-    | StmtParserError of ParseStmt.IParseError
-
 open FsToolkit.ErrorHandling
+open Location
 
 let compile src =
     let tokens = Lex.lex src
 
     result {
-        let! (sExpr, _rest) =
-            tokens
-            |> ParseSExpr.parseSExpr
-            |> Result.mapError SExprParserError
+        let! (sExpr, _rest) = ParseSExpr.parseSExpr (Point(0u, 0u)) tokens
 
-        return!
-            ParseStmt.parseStmt sExpr
-            |> Result.mapError StmtParserError
+        return! ParseStmt.parseStmt sExpr
     }
 
 let input =

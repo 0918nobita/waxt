@@ -2,48 +2,88 @@ module Waxt.Compiler.ParseSExpr
 
 open FsToolkit.ErrorHandling
 open Location
+open Parse
 open SExpr
 open Token
 
-type ParseError =
-    | UnexpectedEndOfInput
-    | UnexpectedRightParen
-    | UnexpectedRightBracket
-    | ExpectedRightParen
-    | ExpectedRightBracket
-
-type RestOfTokens = list<Token>
-type ParseSuccess<'T> = 'T * RestOfTokens
-
-type ParseResult<'T> = Result<ParseSuccess<'T>, ParseError>
-
-let rec parseSExpr: list<Token> -> ParseResult<SExpr> =
+let rec parseSExpr (basePos: Point) : list<Token> -> ParseResult<SExpr * list<Token>> =
     function
-    | [] -> Error UnexpectedEndOfInput
+    | [] ->
+        Error
+            { new IParseError with
+                member _.Msg = "Unexpected end of input"
+              interface ILocatable with
+                  member _.Locate() = Range.fromPoint basePos }
+
     | (Str (range, str)) :: rest -> Ok(Atom(range, str), rest)
+
     | LeftParen start :: rest ->
         result {
-            match! parseManySExpr rest with
+            match! parseManySExpr start rest with
             | (exprs, RightParen ``end`` :: rest) -> return (ParenList(Range(start, ``end``), exprs), rest)
-            | _ -> return! Error ExpectedRightParen
+
+            | (_, []) ->
+                return!
+                    Error
+                        { new IParseError with
+                            member _.Msg = "Expected \")\", but reached end of input"
+                          interface ILocatable with
+                              member _.Locate() = Range.fromPoint basePos }
+
+            | (_, tok :: _) ->
+                return!
+                    Error
+                        { new IParseError with
+                            member _.Msg =
+                                let tok = Token.toString tok
+                                $"Expected \")\", but got %s{tok}"
+                          interface ILocatable with
+                              member _.Locate() = (tok :> ILocatable).Locate() }
         }
-    | RightParen _ :: _ -> Error UnexpectedRightParen
+
     | LeftBracket start :: rest ->
         result {
-            match! parseManySExpr rest with
+            match! parseManySExpr start rest with
             | (exprs, RightBracket ``end`` :: rest) -> return (BracketList(Range(start, ``end``), exprs), rest)
-            | _ -> return! Error ExpectedRightBracket
-        }
-    | RightBracket _ :: _ -> Error UnexpectedRightBracket
 
-and private parseManySExpr: list<Token> -> ParseResult<list<SExpr>> =
+            | (_, []) ->
+                return!
+                    Error
+                        { new IParseError with
+                            member _.Msg = "Expected \"]\", but reached end of input"
+                          interface ILocatable with
+                              member _.Locate() = Range.fromPoint basePos }
+
+            | (_, tok :: _) ->
+                return!
+                    Error
+                        { new IParseError with
+                            member _.Msg =
+                                let tok = Token.toString tok
+                                $"Expected \"]\", but got %s{tok}"
+                          interface ILocatable with
+                              member _.Locate() = (tok :> ILocatable).Locate() }
+        }
+
+    | tok :: _ ->
+        Error
+            { new IParseError with
+                member _.Msg = "Unexpected token"
+              interface ILocatable with
+                  member _.Locate() = (tok :> ILocatable).Locate() }
+
+and private parseManySExpr (basePos: Point) : list<Token> -> ParseResult<list<SExpr> * list<Token>> =
     function
     | [] -> Ok([], [])
+
     | tokens ->
-        match parseSExpr tokens with
+        match parseSExpr basePos tokens with
         | Error _ -> Ok([], tokens)
+
         | Ok (expr, rest) ->
+            let (Range (_, basePos)) = (expr :> ILocatable).Locate()
+
             result {
-                let! (exprs, rest) = parseManySExpr rest
+                let! (exprs, rest) = parseManySExpr basePos rest
                 return (expr :: exprs, rest)
             }

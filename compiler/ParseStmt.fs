@@ -1,14 +1,11 @@
 module Waxt.Compiler.ParseStmt
 
 open Location
+open Parse
 open SExpr
 open Stmt
 
-type IParseError =
-    abstract member Msg: string
-    inherit ILocatable
-
-let parseFunc (basePos: Point) : list<SExpr> -> Result<Stmt, IParseError> =
+let parseFunc (basePos: Point) : list<SExpr> -> ParseResult<Stmt> =
     function
     | [] ->
         Error
