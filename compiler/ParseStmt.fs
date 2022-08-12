@@ -42,11 +42,11 @@ let parseFunc: list<SExpr> -> Result<Stmt, ParseError> =
     | [] -> Error(ExpectedFuncName None)
     | Atom _ :: [] -> Error(ExpectedSignature None)
 
-    | Atom name :: Atom result :: BracketList parameters :: body ->
+    | Atom (_, name) :: Atom (_, result) :: BracketList (_, parameters) :: body ->
         // TODO: 戻り値の型、パラメータ、本体を求めて AST に反映する
         Ok(FuncDecl(name, None, [], []))
 
-    | Atom name :: BracketList parameters :: body ->
+    | Atom (_, name) :: BracketList (_, parameters) :: body ->
         // TODO: パラメータ、本体を求めて AST に反映する
         Ok(FuncDecl(name, None, [], []))
 
@@ -58,9 +58,9 @@ let parseStmt: SExpr -> Result<Stmt, ParseError> =
     | (BracketList _
     | Atom _) as sExpr -> Error(ExpectedParenList sExpr)
 
-    | ParenList [] -> Error(ExpectedKeyword None)
+    | ParenList (_, []) -> Error(ExpectedKeyword None)
 
-    | ParenList (Atom "func" :: rest) -> parseFunc rest
+    | ParenList (_, Atom (_, "func") :: rest) -> parseFunc rest
 
-    | ParenList (Atom str :: _) -> Error(InvalidKeyword str)
-    | ParenList (sExpr :: _) -> Error(ExpectedKeyword(Some sExpr))
+    | ParenList (_, Atom (_, str) :: _) -> Error(InvalidKeyword str)
+    | ParenList (_, sExpr :: _) -> Error(ExpectedKeyword(Some sExpr))

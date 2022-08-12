@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Location.fs" />
     <Compile Include="Token.fs" />
     <Compile Include="Lex.fs" />
     <Compile Include="SExpr.fs" />

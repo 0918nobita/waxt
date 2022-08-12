@@ -1,6 +1,7 @@
 module Waxt.Compiler.ParseSExpr
 
 open FsToolkit.ErrorHandling
+open Location
 open SExpr
 open Token
 
@@ -19,21 +20,21 @@ type ParseResult<'T> = Result<ParseSuccess<'T>, ParseError>
 let rec parseSExpr: list<Token> -> ParseResult<SExpr> =
     function
     | [] -> Error UnexpectedEndOfInput
-    | (Str str) :: rest -> Ok(Atom str, rest)
-    | LeftParen :: rest ->
+    | (Str (range, str)) :: rest -> Ok(Atom(range, str), rest)
+    | LeftParen start :: rest ->
         result {
             match! parseManySExpr rest with
-            | (exprs, RightParen :: rest) -> return (ParenList exprs, rest)
+            | (exprs, RightParen ``end`` :: rest) -> return (ParenList(Range(start, ``end``), exprs), rest)
             | _ -> return! Error ExpectedRightParen
         }
-    | RightParen :: _ -> Error UnexpectedRightParen
-    | LeftBracket :: rest ->
+    | RightParen _ :: _ -> Error UnexpectedRightParen
+    | LeftBracket start :: rest ->
         result {
             match! parseManySExpr rest with
-            | (exprs, RightBracket :: rest) -> return (BracketList exprs, rest)
+            | (exprs, RightBracket ``end`` :: rest) -> return (BracketList(Range(start, ``end``), exprs), rest)
             | _ -> return! Error ExpectedRightBracket
         }
-    | RightBracket :: _ -> Error UnexpectedRightBracket
+    | RightBracket _ :: _ -> Error UnexpectedRightBracket
 
 and private parseManySExpr: list<Token> -> ParseResult<list<SExpr>> =
     function
