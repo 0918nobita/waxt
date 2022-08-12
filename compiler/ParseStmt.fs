@@ -5,6 +5,11 @@ open Parse
 open SExpr
 open Stmt
 
+let (|Type|_|) (str: string) =
+    match str with
+    | "i32" -> Some I32
+    | _ -> None
+
 let parseFunc (basePos: Point) : list<SExpr> -> ParseResult<Stmt> =
     function
     | [] ->
@@ -21,9 +26,16 @@ let parseFunc (basePos: Point) : list<SExpr> -> ParseResult<Stmt> =
               interface ILocatable with
                   member _.Locate() = Range.fromPoint ``end`` }
 
-    | Atom (_, name) :: Atom (_, result) :: BracketList (_, parameters) :: body ->
-        // TODO: 戻り値の型、パラメータ、本体を求めて AST に反映する
-        Ok(FuncDecl(name, None, [], []))
+    | Atom (_, name) :: Atom (resultRange, result) :: BracketList (_, parameters) :: body ->
+        // TODO: パラメータ、本体を求めて AST に反映する
+        match result with
+        | Type ty -> Ok(FuncDecl(name, Some ty, [], []))
+        | _ ->
+            Error
+                { new IParseError with
+                    member _.Msg = $"The result type %s{result} is invalid"
+                  interface ILocatable with
+                      member _.Locate() = resultRange }
 
     | Atom (_, name) :: BracketList (_, parameters) :: body ->
         // TODO: パラメータ、本体を求めて AST に反映する
