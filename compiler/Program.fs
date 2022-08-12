@@ -2,7 +2,7 @@
 
 type CompileError =
     | SExprParserError of ParseSExpr.ParseError
-    | StmtParserError of ParseStmt.ParseError
+    | StmtParserError of ParseStmt.IParseError
 
 open FsToolkit.ErrorHandling
 

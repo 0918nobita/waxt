@@ -1,46 +1,28 @@
 module Waxt.Compiler.ParseStmt
 
+open Location
 open SExpr
 open Stmt
 
-type ParseError =
-    | ExpectedFuncName of actual: option<SExpr>
-    | ExpectedKeyword of actual: option<SExpr>
-    | ExpectedSignature of actual: option<SExpr>
-    | ExpectedParenList of actual: SExpr
-    | InvalidKeyword of actual: string
+type IParseError =
+    abstract member Msg: string
+    inherit ILocatable
 
-module ParseError =
-    let toString =
-        function
-        | ExpectedFuncName (Some actual) ->
-            let actual = SExpr.toString actual
-            $"Expected function name, but found \"%s{actual}\""
-
-        | ExpectedFuncName None -> "Expected function name"
-
-        | ExpectedKeyword (Some actual) ->
-            let actual = SExpr.toString actual
-            $"Expected \"func\" keyword, but found \"%s{actual}\""
-
-        | ExpectedKeyword None -> "Expected \"func\" keyword"
-
-        | ExpectedSignature (Some actual) ->
-            let actual = SExpr.toString actual
-            $"Expected type name or parameters, but found \"%s{actual}\""
-
-        | ExpectedSignature None -> "Expected type name or parameters"
-
-        | ExpectedParenList actual ->
-            let actual = SExpr.toString actual
-            $"Expected parenthesis list, but found \"%s{actual}\""
-
-        | InvalidKeyword actual -> $"Invalid keyword \"%s{actual}\" (possible keywords: \"func\")"
-
-let parseFunc: list<SExpr> -> Result<Stmt, ParseError> =
+let parseFunc (basePos: Point) : list<SExpr> -> Result<Stmt, IParseError> =
     function
-    | [] -> Error(ExpectedFuncName None)
-    | Atom _ :: [] -> Error(ExpectedSignature None)
+    | [] ->
+        Error
+            { new IParseError with
+                member _.Msg = "Expected function name"
+              interface ILocatable with
+                  member _.Locate() = Range.fromPoint basePos }
+
+    | Atom (Range (_, ``end``), _) :: [] ->
+        Error
+            { new IParseError with
+                member _.Msg = "Expected type name or parameters"
+              interface ILocatable with
+                  member _.Locate() = Range.fromPoint ``end`` }
 
     | Atom (_, name) :: Atom (_, result) :: BracketList (_, parameters) :: body ->
         // TODO: 戻り値の型、パラメータ、本体を求めて AST に反映する
@@ -50,17 +32,57 @@ let parseFunc: list<SExpr> -> Result<Stmt, ParseError> =
         // TODO: パラメータ、本体を求めて AST に反映する
         Ok(FuncDecl(name, None, [], []))
 
-    | Atom _ :: sExpr :: _ -> Error(ExpectedSignature(Some sExpr))
-    | sExpr :: _ -> Error(ExpectedFuncName(Some sExpr))
+    | Atom _ :: sExpr :: _ ->
+        Error
+            { new IParseError with
+                member _.Msg =
+                    let sExpr = SExpr.toString sExpr
+                    $"Expected type name or parameters, but got %s{sExpr}"
+              interface ILocatable with
+                  member _.Locate() = (sExpr :> ILocatable).Locate() }
 
-let parseStmt: SExpr -> Result<Stmt, ParseError> =
+    | sExpr :: _ ->
+        Error
+            { new IParseError with
+                member _.Msg =
+                    let sExpr = SExpr.toString sExpr
+                    $"Expected function name, but got %s{sExpr}"
+              interface ILocatable with
+                  member _.Locate() = (sExpr :> ILocatable).Locate() }
+
+let parseStmt: SExpr -> Result<Stmt, IParseError> =
     function
     | (BracketList _
-    | Atom _) as sExpr -> Error(ExpectedParenList sExpr)
+    | Atom _) as sExpr ->
+        Error
+            { new IParseError with
+                member _.Msg =
+                    let sExpr = SExpr.toString sExpr
+                    $"Expected (...) list, but got %s{sExpr}"
+              interface ILocatable with
+                  member _.Locate() = (sExpr :> ILocatable).Locate() }
 
-    | ParenList (_, []) -> Error(ExpectedKeyword None)
+    | ParenList (Range (_, ``end``), []) ->
+        Error
+            { new IParseError with
+                member _.Msg = "Expected keyword"
+              interface ILocatable with
+                  member _.Locate() = Range.fromPoint ``end`` }
 
-    | ParenList (_, Atom (_, "func") :: rest) -> parseFunc rest
+    | ParenList (_, Atom (Range (_, ``end``), "func") :: rest) -> parseFunc ``end`` rest
 
-    | ParenList (_, Atom (_, str) :: _) -> Error(InvalidKeyword str)
-    | ParenList (_, sExpr :: _) -> Error(ExpectedKeyword(Some sExpr))
+    | ParenList (_, Atom (range, str) :: _) ->
+        Error
+            { new IParseError with
+                member _.Msg = $"Invalid keyword %s{str} (possible keywords: func)"
+              interface ILocatable with
+                  member _.Locate() = range }
+
+    | ParenList (_, sExpr :: _) ->
+        Error
+            { new IParseError with
+                member _.Msg =
+                    let sExpr = SExpr.toString sExpr
+                    $"Expected keyword, but got %s{sExpr}"
+              interface ILocatable with
+                  member _.Locate() = (sExpr :> ILocatable).Locate() }

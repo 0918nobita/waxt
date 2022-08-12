@@ -7,6 +7,13 @@ type SExpr =
     | ParenList of range: Range * members: list<SExpr>
     | BracketList of range: Range * members: list<SExpr>
 
+    interface ILocatable with
+        member this.Locate() =
+            match this with
+            | Atom (range, _)
+            | ParenList (range, _)
+            | BracketList (range, _) -> range
+
 module SExpr =
     let rec toString =
         function
