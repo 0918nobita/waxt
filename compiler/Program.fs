@@ -12,7 +12,39 @@ let compile src =
         return! ParseStmt.parseStmt sExpr
     }
 
-let input =
-    "(func add-and-store [addr i32 x i32 y i32] (i32.store addr (i32.add x y)))"
+open System
+open System.IO
 
-input |> compile |> printfn "%A"
+let error (msg: string) =
+    Console.ForegroundColor <- ConsoleColor.Red
+    Console.Error.WriteLine msg
+    Console.ResetColor()
+
+[<EntryPoint>]
+let main args =
+    if Array.isEmpty args then
+        eprintfn "Usage: waxt <file>"
+        error "No input files"
+        1
+    else
+        let inputFilePath = args.[0]
+
+        let src =
+            try
+                File.ReadAllText inputFilePath
+            with
+            | :? FileNotFoundException ->
+                error "The specified file doesn't exist"
+                exit 1
+
+            | :? DirectoryNotFoundException ->
+                error "The specified directory doesn't exist"
+                exit 1
+
+            | :? IOException ->
+                error "Could not read the specified file"
+                exit 1
+
+        src |> compile |> printfn "%A"
+
+        0
