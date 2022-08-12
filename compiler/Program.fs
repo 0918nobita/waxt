@@ -45,6 +45,11 @@ let main args =
                 error "Could not read the specified file"
                 exit 1
 
-        src |> compile |> printfn "%A"
-
-        0
+        match compile src with
+        | Ok stmt ->
+            printfn "%A" stmt
+            0
+        | Error err ->
+            let range = err.Locate() |> Range.toString
+            error $"(%s{range}) %s{err.Msg}"
+            1
