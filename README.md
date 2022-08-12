@@ -38,13 +38,21 @@ WAT (コンパイル後) :
 - [ ] WAT の各命令と対応する組み込み関数 ( `i32.add` , `i32.store` 等)
   - [ ] 実引数の型に応じてコンパイル時に命令を決定するジェネリックな演算 / メモリ操作関数
 - [ ] `let` 束縛
+- [ ] `progn` 特殊形式
 - [ ] `if` 特殊形式
 - [ ] `cond` 特殊形式
+- [ ] `do` 特殊形式
 - [ ] `while` 特殊形式
 - [ ] スレッディングマクロ
 
-## コード例の実行方法
+## CLI の起動方法
 
 ```bash
-dotnet run --project compiler -- example/add-and-store.waxt
+dotnet run --project cli -- example/return-i32.waxt
+```
+
+## テストの実行方法
+
+```bash
+dotnet run --project test
 ```
