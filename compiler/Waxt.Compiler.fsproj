@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Token.fs" />
+    <Compile Include="Lex.fs" />
+    <Compile Include="SExpr.fs" />
+    <Compile Include="Parse.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
