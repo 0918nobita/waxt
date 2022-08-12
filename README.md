@@ -42,3 +42,9 @@ WAT (コンパイル後) :
 - [ ] `cond` 特殊形式
 - [ ] `while` 特殊形式
 - [ ] スレッディングマクロ
+
+## コード例の実行方法
+
+```bash
+dotnet run --project compiler -- example/add-and-store.waxt
+```
