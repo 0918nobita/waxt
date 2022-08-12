@@ -4,8 +4,8 @@ open Location
 open Token
 
 type private LexState =
-    | Initial of currentPos: Point
-    | ReadingStr of currentPos: Point * start: Point * list<char>
+    | Initial of currentPos: Pos
+    | ReadingStr of currentPos: Pos * start: Pos * list<char>
 
 let private isWhiteSpace = System.Char.IsWhiteSpace
 
@@ -22,47 +22,47 @@ let private folder (tokens, state) c =
     match state with
     | Initial currentPos ->
         match c with
-        | '(' -> (LeftParen currentPos :: tokens, Initial(Point.nextColumn currentPos))
-        | ')' -> (RightParen currentPos :: tokens, Initial(Point.nextColumn currentPos))
-        | '[' -> (LeftBracket currentPos :: tokens, Initial(Point.nextColumn currentPos))
-        | ']' -> (RightBracket currentPos :: tokens, Initial(Point.nextColumn currentPos))
-        | '\n' -> (tokens, Initial(Point.nextLine currentPos))
-        | c when isWhiteSpace c -> (tokens, Initial(Point.nextColumn currentPos))
-        | c -> (tokens, ReadingStr(Point.nextColumn currentPos, currentPos, [ c ]))
+        | '(' -> (LeftParen currentPos :: tokens, Initial(Pos.nextColumn currentPos))
+        | ')' -> (RightParen currentPos :: tokens, Initial(Pos.nextColumn currentPos))
+        | '[' -> (LeftBracket currentPos :: tokens, Initial(Pos.nextColumn currentPos))
+        | ']' -> (RightBracket currentPos :: tokens, Initial(Pos.nextColumn currentPos))
+        | '\n' -> (tokens, Initial(Pos.nextLine currentPos))
+        | c when isWhiteSpace c -> (tokens, Initial(Pos.nextColumn currentPos))
+        | c -> (tokens, ReadingStr(Pos.nextColumn currentPos, currentPos, [ c ]))
     | ReadingStr (currentPos, start, cs) ->
         match c with
         | '(' ->
             (LeftParen currentPos
-             :: Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
                 :: tokens,
-             Initial(Point.nextColumn currentPos))
+             Initial(Pos.nextColumn currentPos))
         | ')' ->
             (RightParen currentPos
-             :: Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
                 :: tokens,
-             Initial(Point.nextColumn currentPos))
+             Initial(Pos.nextColumn currentPos))
         | '[' ->
             (LeftBracket currentPos
-             :: Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
                 :: tokens,
-             Initial(Point.nextColumn currentPos))
+             Initial(Pos.nextColumn currentPos))
         | ']' ->
             (RightBracket currentPos
-             :: Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
                 :: tokens,
-             Initial(Point.nextColumn currentPos))
+             Initial(Pos.nextColumn currentPos))
         | '\n' ->
-            (Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+            (Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
              :: tokens,
-             Initial(Point.nextLine currentPos))
+             Initial(Pos.nextLine currentPos))
         | c when isWhiteSpace c ->
-            (Str(Range(start, Point.previousColumn currentPos), charsToStr cs)
+            (Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
              :: tokens,
-             Initial(Point.nextColumn currentPos))
-        | c -> (tokens, ReadingStr(Point.nextColumn currentPos, start, c :: cs))
+             Initial(Pos.nextColumn currentPos))
+        | c -> (tokens, ReadingStr(Pos.nextColumn currentPos, start, c :: cs))
 
 let lex (src: string) =
     src
-    |> Seq.fold folder ([], Initial(Point(0u, 0u)))
+    |> Seq.fold folder ([], Initial(Pos(0u, 0u)))
     |> processFinalState
     |> List.rev

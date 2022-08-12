@@ -2,8 +2,6 @@ module Waxt.Compiler.Parse
 
 open Location
 
-type IParseError =
-    abstract member Msg: string
-    inherit ILocatable
+type ParseError = ParseError of msg: string * at: Range
 
-type ParseResult<'T> = Result<'T, IParseError>
+type ParseResult<'T> = Result<'T, ParseError>

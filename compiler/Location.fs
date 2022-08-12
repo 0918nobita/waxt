@@ -1,28 +1,28 @@
 module Waxt.Compiler.Location
 
-type Point = Point of line: uint * column: uint
+type Pos = Pos of line: uint * column: uint
 
-module Point =
-    let toString (Point (line, column)) =
+module Pos =
+    let toString (Pos (line, column)) =
         let line = line + 1u
         let column = column + 1u
         $"%i{line}:%i{column}"
 
-    let nextColumn (Point (line, column)) = Point(line, column + 1u)
+    let nextColumn (Pos (line, column)) = Pos(line, column + 1u)
 
-    let previousColumn (Point (line, column)) = Point(line, column - 1u)
+    let previousColumn (Pos (line, column)) = Pos(line, column - 1u)
 
-    let nextLine (Point (line, _)) = Point(line + 1u, 0u)
+    let nextLine (Pos (line, _)) = Pos(line + 1u, 0u)
 
-type Range = Range of start: Point * ``end``: Point
+type Range = Range of start: Pos * ``end``: Pos
 
 module Range =
     let toString (Range (start, ``end``)) =
-        let start = Point.toString start
-        let ``end`` = Point.toString ``end``
+        let start = Pos.toString start
+        let ``end`` = Pos.toString ``end``
         $"{start}-{``end``}"
 
-    let fromPoint p = Range(p, p)
+    let fromPos p = Range(p, p)
 
 type ILocatable =
     abstract member Locate: unit -> Range

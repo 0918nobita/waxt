@@ -6,39 +6,27 @@ open Parse
 open SExpr
 open Token
 
-let rec parseSExpr (basePos: Point) : list<Token> -> ParseResult<SExpr * list<Token>> =
+let rec parseSExpr (basePos: Pos) : list<Token> -> ParseResult<SExpr * list<Token>> =
     function
-    | [] ->
-        Error
-            { new IParseError with
-                member _.Msg = "Unexpected end of input"
-              interface ILocatable with
-                  member _.Locate() = Range.fromPoint basePos }
+    | [] -> Error(ParseError("Unexpected end of input", Range.fromPos basePos))
 
     | (Str (range, str)) :: rest -> Ok(Atom(range, str), rest)
 
-    | LeftParen start :: rest ->
+    | LeftParen basePos :: rest ->
         result {
-            match! parseManySExpr start rest with
-            | (exprs, RightParen ``end`` :: rest) -> return (ParenList(Range(start, ``end``), exprs), rest)
+            match! parseManySExpr basePos rest with
+            | (_, []) -> return! Error(ParseError("Expected `)`, but reached end of input", Range.fromPos basePos))
 
-            | (_, []) ->
-                return!
-                    Error
-                        { new IParseError with
-                            member _.Msg = "Expected \")\", but reached end of input"
-                          interface ILocatable with
-                              member _.Locate() = Range.fromPoint basePos }
+            | (exprs, RightParen ``end`` :: rest) -> return (ParenList(Range(basePos, ``end``), exprs), rest)
 
             | (_, tok :: _) ->
                 return!
-                    Error
-                        { new IParseError with
-                            member _.Msg =
-                                let tok = Token.toString tok
-                                $"Expected \")\", but got %s{tok}"
-                          interface ILocatable with
-                              member _.Locate() = (tok :> ILocatable).Locate() }
+                    Error(
+                        ParseError(
+                            (let tok = Token.toString tok in $"Expected `)`, but got `%s{tok}`"),
+                            (tok :> ILocatable).Locate()
+                        )
+                    )
         }
 
     | LeftBracket start :: rest ->
@@ -46,33 +34,22 @@ let rec parseSExpr (basePos: Point) : list<Token> -> ParseResult<SExpr * list<To
             match! parseManySExpr start rest with
             | (exprs, RightBracket ``end`` :: rest) -> return (BracketList(Range(start, ``end``), exprs), rest)
 
-            | (_, []) ->
-                return!
-                    Error
-                        { new IParseError with
-                            member _.Msg = "Expected \"]\", but reached end of input"
-                          interface ILocatable with
-                              member _.Locate() = Range.fromPoint basePos }
+            | (_, []) -> return! Error(ParseError("Expected `]`, but reached end of input", Range.fromPos basePos))
 
             | (_, tok :: _) ->
                 return!
-                    Error
-                        { new IParseError with
-                            member _.Msg =
-                                let tok = Token.toString tok
-                                $"Expected \"]\", but got %s{tok}"
-                          interface ILocatable with
-                              member _.Locate() = (tok :> ILocatable).Locate() }
+                    Error(
+                        ParseError(
+                            (let tok = Token.toString tok in $"Expected `]`, but got `%s{tok}`"),
+                            (tok :> ILocatable).Locate()
+                        )
+                    )
         }
 
     | tok :: _ ->
-        Error
-            { new IParseError with
-                member _.Msg = "Unexpected token"
-              interface ILocatable with
-                  member _.Locate() = (tok :> ILocatable).Locate() }
+        Error(ParseError((let tok = Token.toString tok in $"Unexpected token `%s{tok}`"), (tok :> ILocatable).Locate()))
 
-and private parseManySExpr (basePos: Point) : list<Token> -> ParseResult<list<SExpr> * list<Token>> =
+and private parseManySExpr (basePos: Pos) : list<Token> -> ParseResult<list<SExpr> * list<Token>> =
     function
     | [] -> Ok([], [])
 

@@ -2,12 +2,13 @@
 
 open FsToolkit.ErrorHandling
 open Location
+open Parse
 
 let compile src =
     let tokens = Lex.lex src
 
     result {
-        let! (sExpr, _rest) = ParseSExpr.parseSExpr (Point(0u, 0u)) tokens
+        let! (sExpr, _rest) = ParseSExpr.parseSExpr (Pos(0u, 0u)) tokens
 
         return! ParseStmt.parseStmt sExpr
     }
@@ -49,7 +50,8 @@ let main args =
         | Ok stmt ->
             printfn "%A" stmt
             0
-        | Error err ->
-            let range = err.Locate() |> Range.toString
-            error $"(%s{range}) %s{err.Msg}"
+
+        | Error (ParseError (msg, at)) ->
+            let at = Range.toString at
+            error $"(%s{at}) %s{msg}"
             1

@@ -3,19 +3,19 @@ module Waxt.Compiler.Token
 open Location
 
 type Token =
-    | LeftParen of Point
-    | RightParen of Point
-    | LeftBracket of Point
-    | RightBracket of Point
+    | LeftParen of Pos
+    | RightParen of Pos
+    | LeftBracket of Pos
+    | RightBracket of Pos
     | Str of Range * string
 
     interface ILocatable with
         member this.Locate() =
             match this with
-            | LeftParen point
-            | RightParen point
-            | LeftBracket point
-            | RightBracket point -> Range.fromPoint point
+            | LeftParen pos
+            | RightParen pos
+            | LeftBracket pos
+            | RightBracket pos -> Range.fromPos pos
             | Str (range, _) -> range
 
 module Token =
