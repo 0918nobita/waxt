@@ -3,7 +3,6 @@
 open System
 open System.IO
 open Waxt.Compiler
-open Waxt.Compiler.Location
 open Waxt.Compiler.Parse
 
 let error (msg: string) =
@@ -41,7 +40,6 @@ let main args =
             printfn "%A" stmt
             0
 
-        | Error (ParseError (msg, at)) ->
-            let at = Range.toString at
-            error $"(%s{at}) %s{msg}"
+        | Error parseError ->
+            error (ParseError.toString parseError)
             1
