@@ -10,11 +10,8 @@ let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Ty>> =
     function
     | [] -> Ok []
 
-    | [ Atom (_, (Range (_, ``end``))) ] -> Error(ParseError("Expected type name", Range.fromPos ``end``))
-
-    | [ expr ] ->
-        let (Range (_, ``end``)) = (expr :> ILocatable).Locate()
-        Error(ParseError("Expected parameter name", Range.fromPos ``end``))
+    | [ Atom (_, (Range (_, ``end``))) ] ->
+        Error(ParseError("Expected type name, but reached last element of list", Range.fromPos ``end``))
 
     | Atom (param, _) :: Atom (ty, tyRange) :: rest ->
         match ty with
