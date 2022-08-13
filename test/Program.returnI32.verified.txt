@@ -1,0 +1,40 @@
+﻿{
+  "type": "funcDef",
+  "name": "foo",
+  "result": "i32",
+  "parameters": [
+    {
+      "name": "x",
+      "ty": "i32"
+    },
+    {
+      "name": "y",
+      "ty": "i32"
+    }
+  ],
+  "body": [
+    {
+      "type": "I32Mul",
+      "lhs": {
+        "type": "I32Add",
+        "lhs": {
+          "type": "I32Const",
+          "value": 1,
+          "at": "1:47-1:47"
+        },
+        "rhs": {
+          "type": "I32Const",
+          "value": 2,
+          "at": "1:49-1:49"
+        },
+        "at": "1:38-1:50"
+      },
+      "rhs": {
+        "type": "I32Const",
+        "value": 4,
+        "at": "1:52-1:52"
+      },
+      "at": "1:29-1:53"
+    }
+  ]
+}

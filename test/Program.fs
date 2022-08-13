@@ -1,20 +1,31 @@
 ﻿module Waxt.Compiler.Test.Program
 
 open Expecto
+open Thoth.Json.Net
+open VerifyExpecto
 open Waxt.Compiler
+
+let compilationShouldSucceed src =
+    src
+    |> compile
+    |> (fun result -> Expect.wantOk result "The compilation should succeed")
+    |> Stmt.toJson
+    |> Encode.toString 2
 
 [<Tests>]
 let funcDefTest =
-    test "funcDef" {
-        let result = compile "(func foo i32 [x i32 y i32] (i32.mul (i32.add 1 2) 4))"
-        let expected = Ok(Stmt.FuncDef("foo", Some Stmt.I32, [], []))
-        Expect.equal result expected "(func ...) should be compiled to FuncDef"
+    testTask "funcDef" {
+        let result =
+            "(func foo i32 [x i32 y i32] (i32.mul (i32.add 1 2) 4))"
+            |> compilationShouldSucceed
+
+        do! Verifier.Verify("returnI32", result)
 
         let result =
-            compile "(func add-and-store [addr *i32 x i32 y i32] (i32.store addr (i32.add x y)))"
+            "(func add-and-store [addr i32 x i32 y i32] (i32.store addr (i32.add x y)))"
+            |> compilationShouldSucceed
 
-        let expected = Ok(Stmt.FuncDef("add-and-store", None, [], []))
-        Expect.equal result expected "The result type name in (func ...) can be omitted"
+        do! Verifier.Verify("voidFunc", result)
     }
 
 [<EntryPoint>]
