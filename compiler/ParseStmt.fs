@@ -1,10 +1,7 @@
 [<AutoOpen>]
 module Waxt.Compiler.ParseStmt.Library
 
-open Waxt.Compiler.Location
-open Waxt.Compiler.Parse
-open Waxt.Compiler.SExpr
-open Waxt.Compiler.Stmt
+open Waxt.Compiler
 
 let parseStmt: SExpr -> ParseResult<Stmt> =
     function

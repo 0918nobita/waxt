@@ -1,3 +1,4 @@
+[<AutoOpen>]
 module Waxt.Compiler.Location
 
 type Pos = Pos of line: uint * column: uint

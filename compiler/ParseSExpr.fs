@@ -1,9 +1,6 @@
 module Waxt.Compiler.ParseSExpr
 
 open FsToolkit.ErrorHandling
-open Location
-open Parse
-open SExpr
 open Token
 
 let rec parseSExpr (basePos: Pos) : list<Token> -> ParseResult<SExpr * list<Token>> =

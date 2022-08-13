@@ -1,7 +1,5 @@
 module Waxt.Compiler.Token
 
-open Location
-
 type Token =
     | LeftParen of Pos
     | RightParen of Pos

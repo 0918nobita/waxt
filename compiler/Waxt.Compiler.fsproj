@@ -15,6 +15,7 @@
     <Compile Include="SExpr.fs" />
     <Compile Include="ParseSExpr.fs" />
     <Compile Include="Stmt.fs" />
+    <Compile Include="ParseType.fs" />
     <Compile Include="ParseStmt/ParseFuncParams.fs" />
     <Compile Include="ParseStmt/ParseExpr.fs" />
     <Compile Include="ParseStmt/ParseFunc.fs" />

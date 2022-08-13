@@ -2,7 +2,6 @@
 module Waxt.Compiler.Library
 
 open FsToolkit.ErrorHandling
-open Location
 open Waxt.Compiler.ParseStmt
 
 let compile src =

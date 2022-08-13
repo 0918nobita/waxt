@@ -1,6 +1,5 @@
 module Waxt.Compiler.Lex
 
-open Location
 open Token
 
 type private LexState =

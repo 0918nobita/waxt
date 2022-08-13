@@ -1,6 +1,5 @@
+[<AutoOpen>]
 module Waxt.Compiler.SExpr
-
-open Location
 
 type SExpr =
     | Atom of content: string * at: Range

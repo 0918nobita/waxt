@@ -1,10 +1,7 @@
 module Waxt.Compiler.ParseStmt.ParseFuncParams
 
 open FsToolkit.ErrorHandling
-open Waxt.Compiler.Location
-open Waxt.Compiler.Parse
-open Waxt.Compiler.SExpr
-open Waxt.Compiler.Stmt
+open Waxt.Compiler
 
 let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Ty>> =
     function
@@ -14,13 +11,11 @@ let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Ty>> =
         Error(ParseError("Expected type name, but reached last element of list", Range.fromPos ``end``))
 
     | Atom (param, _) :: Atom (ty, tyRange) :: rest ->
-        match ty with
-        | Type ty ->
-            result {
-                let! parameters = parseFuncParams rest
-                return (param, ty) :: parameters
-            }
-        | _ -> Error(ParseError($"The parameter type `%s{ty}` is invalid", tyRange))
+        result {
+            let! ty = ParseType.parseType tyRange ty
+            let! parameters = parseFuncParams rest
+            return (param, ty) :: parameters
+        }
 
     | Atom _ :: expr :: _ ->
         let str = SExpr.toString expr

@@ -1,10 +1,7 @@
 module Waxt.Compiler.ParseStmt.ParseExpr
 
 open FsToolkit.ErrorHandling
-open Waxt.Compiler.Location
-open Waxt.Compiler.Parse
-open Waxt.Compiler.SExpr
-open Waxt.Compiler.Stmt
+open Waxt.Compiler
 
 let private (|Int|_|) (str: string) =
     match System.Int32.TryParse str with

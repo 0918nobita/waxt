@@ -1,7 +1,6 @@
 [<AutoOpen>]
 module Waxt.Compiler.Stmt
 
-open Location
 open Thoth.Json.Net
 
 type Ty = I32
@@ -10,11 +9,6 @@ module Ty =
     let toJson: Ty -> JsonValue =
         function
         | I32 -> Encode.string "i32"
-
-let (|Type|_|) (str: string) =
-    match str with
-    | "i32" -> Some I32
-    | _ -> None
 
 type Expr =
     | I32Add of lhs: Expr * rhs: Expr * at: Range
