@@ -19,12 +19,12 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
     | Atom (_, name) :: Atom (range, result) :: BracketList (_, parameters) :: body ->
         // TODO: パラメータ、本体を求めて AST に反映する
         match result with
-        | Type ty -> Ok(FuncDecl(name, Some ty, [], []))
+        | Type ty -> Ok(FuncDef(name, Some ty, [], []))
         | _ -> Error(ParseError("The result type `%s{result}` is invalid", range))
 
     | Atom (_, name) :: BracketList (_, parameters) :: body ->
         // TODO: パラメータ、本体を求めて AST に反映する
-        Ok(FuncDecl(name, None, [], []))
+        Ok(FuncDef(name, None, [], []))
 
     | Atom _ :: sExpr :: _ ->
         Error(

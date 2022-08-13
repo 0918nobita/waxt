@@ -1,20 +1,10 @@
-﻿module Waxt.Compiler.Program
-
-open FsToolkit.ErrorHandling
-open Location
-open Parse
-
-let compile src =
-    let tokens = Lex.lex src
-
-    result {
-        let! (sExpr, _rest) = ParseSExpr.parseSExpr (Pos(0u, 0u)) tokens
-
-        return! ParseStmt.parseStmt sExpr
-    }
+﻿module Waxt.Cli
 
 open System
 open System.IO
+open Waxt.Compiler
+open Waxt.Compiler.Location
+open Waxt.Compiler.Parse
 
 let error (msg: string) =
     Console.ForegroundColor <- ConsoleColor.Red
