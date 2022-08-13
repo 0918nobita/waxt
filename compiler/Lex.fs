@@ -15,7 +15,7 @@ let private processFinalState (tokens, state) =
     match state with
     | Initial _ -> tokens
     | ReadingStr (currentPos, start, cs) ->
-        (Str(Range(start, currentPos), charsToStr cs)
+        (Str(charsToStr cs, Range(start, currentPos))
          :: tokens)
 
 let private folder (tokens, state) c =
@@ -33,30 +33,30 @@ let private folder (tokens, state) c =
         match c with
         | '(' ->
             (LeftParen currentPos
-             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+             :: Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
                 :: tokens,
              Initial(Pos.nextColumn currentPos))
         | ')' ->
             (RightParen currentPos
-             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+             :: Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
                 :: tokens,
              Initial(Pos.nextColumn currentPos))
         | '[' ->
             (LeftBracket currentPos
-             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+             :: Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
                 :: tokens,
              Initial(Pos.nextColumn currentPos))
         | ']' ->
             (RightBracket currentPos
-             :: Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+             :: Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
                 :: tokens,
              Initial(Pos.nextColumn currentPos))
         | '\n' ->
-            (Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+            (Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
              :: tokens,
              Initial(Pos.nextLine currentPos))
         | c when isWhiteSpace c ->
-            (Str(Range(start, Pos.previousColumn currentPos), charsToStr cs)
+            (Str(charsToStr cs, Range(start, Pos.previousColumn currentPos))
              :: tokens,
              Initial(Pos.nextColumn currentPos))
         | c -> (tokens, ReadingStr(Pos.nextColumn currentPos, start, c :: cs))

@@ -17,7 +17,7 @@ let rec parseSExpr (basePos: Pos) : list<Token> -> ParseResult<SExpr * list<Toke
             match! parseManySExpr basePos rest with
             | (_, []) -> return! Error(ParseError("Expected `)`, but reached end of input", Range.fromPos basePos))
 
-            | (exprs, RightParen ``end`` :: rest) -> return (ParenList(Range(basePos, ``end``), exprs), rest)
+            | (exprs, RightParen ``end`` :: rest) -> return (ParenList(exprs, Range(basePos, ``end``)), rest)
 
             | (_, tok :: _) ->
                 return!
@@ -32,7 +32,7 @@ let rec parseSExpr (basePos: Pos) : list<Token> -> ParseResult<SExpr * list<Toke
     | LeftBracket start :: rest ->
         result {
             match! parseManySExpr start rest with
-            | (exprs, RightBracket ``end`` :: rest) -> return (BracketList(Range(start, ``end``), exprs), rest)
+            | (exprs, RightBracket ``end`` :: rest) -> return (BracketList(exprs, Range(start, ``end``)), rest)
 
             | (_, []) -> return! Error(ParseError("Expected `]`, but reached end of input", Range.fromPos basePos))
 

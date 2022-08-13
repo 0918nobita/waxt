@@ -3,29 +3,29 @@ module Waxt.Compiler.SExpr
 open Location
 
 type SExpr =
-    | Atom of range: Range * content: string
-    | ParenList of range: Range * members: list<SExpr>
-    | BracketList of range: Range * members: list<SExpr>
+    | Atom of content: string * at: Range
+    | ParenList of members: list<SExpr> * at: Range
+    | BracketList of members: list<SExpr> * at: Range
 
     interface ILocatable with
         member this.Locate() =
             match this with
-            | Atom (range, _)
-            | ParenList (range, _)
-            | BracketList (range, _) -> range
+            | Atom (_, at)
+            | ParenList (_, at)
+            | BracketList (_, at) -> at
 
 module SExpr =
     let rec toString =
         function
-        | Atom (_, str) -> str
+        | Atom (str, _) -> str
 
-        | ParenList (_, list) ->
+        | ParenList (list, _) ->
             list
             |> List.map toString
             |> String.concat " "
             |> sprintf "(%s)"
 
-        | BracketList (_, list) ->
+        | BracketList (list, _) ->
             list
             |> List.map toString
             |> String.concat " "

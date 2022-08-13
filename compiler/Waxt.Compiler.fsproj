@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Waxt.Compiler</AssemblyName>
     <RootNamespace>Waxt.Compiler</RootNamespace>
   </PropertyGroup>
 

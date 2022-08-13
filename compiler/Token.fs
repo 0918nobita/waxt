@@ -7,7 +7,7 @@ type Token =
     | RightParen of Pos
     | LeftBracket of Pos
     | RightBracket of Pos
-    | Str of Range * string
+    | Str of raw: string * at: Range
 
     interface ILocatable with
         member this.Locate() =
@@ -16,7 +16,7 @@ type Token =
             | RightParen pos
             | LeftBracket pos
             | RightBracket pos -> Range.fromPos pos
-            | Str (range, _) -> range
+            | Str (_, at) -> at
 
 module Token =
     let toString =
@@ -25,4 +25,4 @@ module Token =
         | RightParen _ -> ")"
         | LeftBracket _ -> "["
         | RightBracket _ -> "]"
-        | Str (_, str) -> str
+        | Str (str, _) -> str
