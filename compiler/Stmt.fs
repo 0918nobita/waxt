@@ -11,6 +11,11 @@ module Ty =
         function
         | I32 -> Encode.string "i32"
 
+let (|Type|_|) (str: string) =
+    match str with
+    | "i32" -> Some I32
+    | _ -> None
+
 type Expr =
     | I32Add of lhs: Expr * rhs: Expr * at: Range
     | I32Const of value: int * at: Range
