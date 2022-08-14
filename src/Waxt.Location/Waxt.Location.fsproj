@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Waxt.Location</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Pos.fs" />
+    <Compile Include="Range.fs" />
+    <Compile Include="Locatable.fs" />
+  </ItemGroup>
+
+</Project>
