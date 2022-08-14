@@ -3,7 +3,7 @@ module Waxt.Compiler.ParseStmt.ParseFuncParams
 open FsToolkit.ErrorHandling
 open Waxt.Compiler
 
-let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Ty>> =
+let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Type.T>> =
     function
     | [] -> Ok []
 

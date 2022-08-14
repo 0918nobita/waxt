@@ -20,6 +20,8 @@
     <Compile Include="ParseStmt/ParseExpr.fs" />
     <Compile Include="ParseStmt/ParseFunc.fs" />
     <Compile Include="ParseStmt.fs" />
+    <Compile Include="TypedExpr.fs" />
+    <Compile Include="TypeCheck.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

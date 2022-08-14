@@ -1,0 +1,25 @@
+﻿{
+  Case: TypeError,
+  Fields: [
+    x is not defined,
+    {
+      Case: Range,
+      Fields: [
+        {
+          Case: Pos,
+          Fields: [
+            0,
+            0
+          ]
+        },
+        {
+          Case: Pos,
+          Fields: [
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -17,14 +17,14 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
             let! ty = ParseType.parseType range resultTy
             let! parameters = parseFuncParams parameters
             let! body = parseManyExpr body
-            return FuncDef(name, Some ty, parameters, body)
+            return FuncDef(name, ty, parameters, body)
         }
 
     | Atom (name, _) :: BracketList (parameters, _) :: body ->
         result {
             let! parameters = parseFuncParams parameters
             let! body = parseManyExpr body
-            return FuncDef(name, None, parameters, body)
+            return FuncDef(name, Type.Unit, parameters, body)
         }
 
     | Atom _ :: sExpr :: _ ->

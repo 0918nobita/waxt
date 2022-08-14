@@ -1,6 +1,7 @@
 ﻿{
   "type": "funcDef",
   "name": "add-and-store",
+  "result": "unit",
   "parameters": [
     {
       "name": "addr",
