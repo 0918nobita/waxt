@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Waxt.Token</RootNamespace>
+    <RootNamespace>Waxt.Lexer</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +11,11 @@
 
   <ItemGroup>
     <ProjectReference Include="../Waxt.Location/Waxt.Location.fsproj" />
+    <ProjectReference Include="../Waxt.Token/Waxt.Token.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Thoth.Json.Net" Version="8.0.0" />
+    <PackageReference Include="FsToolkit.ErrorHandling" Version="2.13.0" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module Waxt.Token.Library
 
+open Thoth.Json.Net
 open Waxt.Location
 
 /// 構文の最小単位。字句解析器の出力・構文解析器の入力で用いられる。
@@ -33,3 +34,25 @@ module Token =
         | LeftBracket _ -> "["
         | RightBracket _ -> "]"
         | Str (str, _) -> str
+
+    let toJson =
+        function
+        | LeftParen pos ->
+            Encode.object [ "token", Encode.string "("
+                            "at", Encode.string (Pos.toString pos) ]
+
+        | RightParen pos ->
+            Encode.object [ "token", Encode.string ")"
+                            "at", Encode.string (Pos.toString pos) ]
+
+        | LeftBracket pos ->
+            Encode.object [ "token", Encode.string "["
+                            "at", Encode.string (Pos.toString pos) ]
+
+        | RightBracket pos ->
+            Encode.object [ "token", Encode.string "]"
+                            "at", Encode.string (Pos.toString pos) ]
+
+        | Str (str, at) ->
+            Encode.object [ "token", Encode.string str
+                            "at", Encode.string (Range.toString at) ]
