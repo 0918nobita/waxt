@@ -2,7 +2,7 @@ namespace Waxt.TypedAst
 
 open Thoth.Json.Net
 open Waxt.Location
-open Waxt.UntypedAst
+open Waxt.Type
 
 type TypedAst =
     | I32Add of lhs: TypedAst * rhs: TypedAst * at: Range
@@ -56,6 +56,6 @@ module TypedAst =
         function
         | I32Add _
         | I32Const _
-        | I32Mul _ -> I32
-        | I32Store _ -> Unit
+        | I32Mul _ -> I32 None
+        | I32Store _ -> Unit None
         | Var (_, ty, _) -> ty

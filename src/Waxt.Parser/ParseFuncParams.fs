@@ -2,7 +2,7 @@ module Waxt.Parser.ParseFuncParams
 
 open FsToolkit.ErrorHandling
 open Waxt.Location
-open Waxt.UntypedAst
+open Waxt.Type
 
 let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Type>> =
     function

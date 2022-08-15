@@ -6,13 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Type.fs" />
     <Compile Include="Expr.fs" />
     <Compile Include="Stmt.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Waxt.Location\Waxt.Location.fsproj" />
+    <ProjectReference Include="..\Waxt.Type\Waxt.Type.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

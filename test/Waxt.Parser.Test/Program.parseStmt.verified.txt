@@ -1,15 +1,24 @@
 ﻿{
   "type": "funcDef",
   "name": "foo",
-  "result": "i32",
+  "result": {
+    "type": "i32",
+    "at": "1:11-1:13"
+  },
   "parameters": [
     {
       "name": "x",
-      "ty": "i32"
+      "ty": {
+        "type": "i32",
+        "at": "1:18-1:20"
+      }
     },
     {
       "name": "y",
-      "ty": "i32"
+      "ty": {
+        "type": "i32",
+        "at": "1:24-1:26"
+      }
     }
   ],
   "body": [

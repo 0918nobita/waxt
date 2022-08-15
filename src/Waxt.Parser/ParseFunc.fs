@@ -2,6 +2,7 @@ module Waxt.Parser.ParseFunc
 
 open FsToolkit.ErrorHandling
 open Waxt.Location
+open Waxt.Type
 open Waxt.UntypedAst
 
 open ParseExpr
@@ -25,7 +26,7 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
         result {
             let! parameters = parseFuncParams parameters
             let! body = parseManyExpr body
-            return FuncDef(name, Type.Unit, parameters, body)
+            return FuncDef(name, Unit None, parameters, body)
         }
 
     | Atom _ :: sExpr :: _ ->

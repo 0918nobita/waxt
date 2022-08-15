@@ -2,6 +2,7 @@
 module Waxt.UntypedAst.Stmt
 
 open Thoth.Json.Net
+open Waxt.Type
 
 type Stmt = FuncDef of name: string * result: Type * parameters: list<string * Type> * body: list<Expr>
 
