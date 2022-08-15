@@ -1,0 +1,10 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+framework: net6.0
+
+nuget Expecto ~> 9.0.4
+nuget FsToolkit.ErrorHandling ~> 2.13.0
+nuget Thoth.Json.Net ~> 8.0.0
+nuget Verify ~> 17.9.0
+nuget Verify.Expecto ~> 17.9.0
