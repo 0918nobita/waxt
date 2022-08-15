@@ -1,4 +1,4 @@
-﻿[<AutoOpen>]
+[<AutoOpen>]
 module Waxt.Lexer.Library
 
 open Waxt.Location
@@ -6,27 +6,27 @@ open Waxt.Token
 
 type LexerError = LineFeedNotFound of Pos
 
-let (|CLeftParen|_|) =
+let private (|CLeftParen|_|) =
     function
     | '(' -> Some LeftParen
     | _ -> None
 
-let (|CRightParen|_|) =
+let private (|CRightParen|_|) =
     function
     | ')' -> Some RightParen
     | _ -> None
 
-let (|CLeftBracket|_|) =
+let private (|CLeftBracket|_|) =
     function
     | '[' -> Some LeftBracket
     | _ -> None
 
-let (|CRightBracket|_|) =
+let private (|CRightBracket|_|) =
     function
     | ']' -> Some RightBracket
     | _ -> None
 
-let (|WhiteSpace|_|) c =
+let private (|WhiteSpace|_|) c =
     if System.Char.IsWhiteSpace c then
         Some()
     else
