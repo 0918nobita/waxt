@@ -1,10 +1,13 @@
-[<AutoOpen>]
+﻿[<AutoOpen>]
 module Waxt.Lexer.Library
 
 open Waxt.Location
 open Waxt.Token
 
-type LexerError = LineFeedNotFound of Pos
+/// 字句解析中に発生するエラー
+type LexerError =
+    /// キャリッジリターンの直後にラインフィードが続いていない
+    | LineFeedNotFound of Pos
 
 let private (|CLeftParen|_|) =
     function
@@ -34,6 +37,7 @@ let private (|WhiteSpace|_|) c =
 
 open FsToolkit.ErrorHandling
 
+/// 与えられた文字列に対して字句解析を行い、成功した場合はトークン列を返す
 let lex (str: string) : Result<list<Token>, LexerError> =
     let rec inner (basePos: Pos) (strAcc: option<Pos * string>) (chars: list<char>) : Result<list<Token>, LexerError> =
         match strAcc, chars with
