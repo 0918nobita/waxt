@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Waxt.Location/Waxt.Location.fsproj" />
-    <ProjectReference Include="../Waxt.Token/Waxt.Token.fsproj" />
+    <ProjectReference Include="..\Waxt.Location\Waxt.Location.fsproj" />
+    <ProjectReference Include="..\Waxt.Token\Waxt.Token.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />
