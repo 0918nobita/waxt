@@ -94,6 +94,6 @@ let lex (str: string) : Result<list<Token>, LexerError> =
 
         | None, c :: cs -> inner (Pos.nextCol basePos) (Some(basePos, string c)) cs
 
-        | Some (start, str), c :: cs -> inner (Pos.nextCol basePos) (Some(start, string c + str)) cs
+        | Some (start, str), c :: cs -> inner (Pos.nextCol basePos) (Some(start, str + string c)) cs
 
     inner Pos.origin None (Seq.toList str)
