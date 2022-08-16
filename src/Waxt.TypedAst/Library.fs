@@ -4,11 +4,11 @@ open Thoth.Json.Net
 open Waxt.Location
 open Waxt.Type
 
-type TypedAst =
-    | I32Add of lhs: TypedAst * rhs: TypedAst * at: Range
+type TypedExpr =
+    | I32Add of lhs: TypedExpr * rhs: TypedExpr * at: Range
     | I32Const of value: int * at: Range
-    | I32Mul of lhs: TypedAst * rhs: TypedAst * at: Range
-    | I32Store of addr: TypedAst * content: TypedAst * at: Range
+    | I32Mul of lhs: TypedExpr * rhs: TypedExpr * at: Range
+    | I32Store of addr: TypedExpr * content: TypedExpr * at: Range
     | Var of name: string * ty: Type * at: Range
 
     interface ILocatable with
@@ -20,8 +20,8 @@ type TypedAst =
             | I32Store (_, _, at)
             | Var (_, _, at) -> at
 
-module TypedAst =
-    let rec toJson: TypedAst -> JsonValue =
+module TypedExpr =
+    let rec toJson: TypedExpr -> JsonValue =
         function
         | I32Add (lhs, rhs, at) ->
             Encode.object [ "type", Encode.string "I32Add"
@@ -52,7 +52,7 @@ module TypedAst =
                             "ty", Type.toJson ty
                             "at", Encode.string (Range.toString at) ]
 
-    let getType: TypedAst -> Type =
+    let getType: TypedExpr -> Type =
         function
         | I32Add _
         | I32Const _
