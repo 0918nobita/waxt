@@ -72,13 +72,13 @@ WAT (コンパイル後) :
 ## CLI の起動方法
 
 ```bash
-dotnet run --project cli -- example/return-i32.waxt
+dotnet run --project src/Waxt.Cli -- example/return-i32.waxt
 ```
 
 ## テストの実行方法
 
 ```bash
-dotnet run --project test
+./test.sh
 ```
 
 ## プロジェクトの依存関係
