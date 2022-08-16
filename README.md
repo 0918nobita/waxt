@@ -80,3 +80,28 @@ dotnet run --project cli -- example/return-i32.waxt
 ```bash
 dotnet run --project test
 ```
+
+## プロジェクトの依存関係
+
+```mermaid
+graph TB
+  Location.Test-->Location
+  Token-->Location
+  Lexer-->Location
+  Lexer-->Token
+  Lexer.Test-->Lexer
+  Lexer.Test-->Token
+  UntypedAst-->Location
+  UntypedAst-->Type
+  Parser-->Location
+  Parser-->Token
+  Parser-->UntypedAst
+  Parser.Test-->Lexer
+  Parser.Test-->Parser
+  TypedAst-->Location
+  TypedAst-->Type
+  TypeChecker-->Location
+  TypeChecker-->Type
+  TypeChecker-->TypedAst
+  TypeChecker-->UntypedAst
+```
