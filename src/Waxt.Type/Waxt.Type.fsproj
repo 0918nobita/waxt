@@ -2,10 +2,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Waxt.Type</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="Type.fs" />
+    <Compile Include="TypeEnv.fs" />
   </ItemGroup>
 
   <ItemGroup>

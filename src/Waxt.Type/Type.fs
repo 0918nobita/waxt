@@ -1,4 +1,5 @@
-namespace Waxt.Type
+[<AutoOpen>]
+module Waxt.Type.Type
 
 open Thoth.Json.Net
 open Waxt.Location
