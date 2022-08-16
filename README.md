@@ -85,19 +85,14 @@ dotnet run --project src/Waxt.Cli -- example/return-i32.waxt
 
 ```mermaid
 graph TB
-  Location.Test-->Location
   Token-->Location
   Lexer-->Location
   Lexer-->Token
-  Lexer.Test-->Lexer
-  Lexer.Test-->Token
   UntypedAst-->Location
   UntypedAst-->Type
   Parser-->Location
   Parser-->Token
   Parser-->UntypedAst
-  Parser.Test-->Lexer
-  Parser.Test-->Parser
   TypedAst-->Location
   TypedAst-->Type
   TypeChecker-->Location

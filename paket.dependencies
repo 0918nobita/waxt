@@ -4,6 +4,7 @@ storage: none
 framework: net6.0
 
 nuget Expecto ~> 9.0.4
+nuget FSharp.Core ~> 6.0.5
 nuget FsToolkit.ErrorHandling ~> 2.13.0
 nuget Thoth.Json.Net ~> 8.0.0
 nuget Verify ~> 17.9.0
