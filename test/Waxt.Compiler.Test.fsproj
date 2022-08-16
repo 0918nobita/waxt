@@ -12,7 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../compiler/Waxt.Compiler.fsproj" />
+    <ProjectReference Include="..\src\Waxt.Compiler\Waxt.Compiler.fsproj" />
+    <ProjectReference Include="..\src\Waxt.TypeChecker\Waxt.TypeChecker.fsproj" />
+    <ProjectReference Include="..\src\Waxt.TypedAst\Waxt.TypedAst.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

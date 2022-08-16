@@ -4,12 +4,14 @@ open Expecto
 open Thoth.Json.Net
 open VerifyExpecto
 open Waxt.Compiler
+open Waxt.UntypedAst
 
 let compilationShouldSucceed src =
     src
     |> compile
     |> (fun result -> Expect.wantOk result "The compilation should succeed")
-    |> Stmt.toJson
+    |> List.map Stmt.toJson
+    |> Encode.list
     |> Encode.toString 2
 
 [<Tests>]

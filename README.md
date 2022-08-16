@@ -104,4 +104,8 @@ graph TB
   TypeChecker-->Type
   TypeChecker-->TypedAst
   TypeChecker-->UntypedAst
+  Compiler-->Lexer
+  Compiler-->Location
+  Compiler-->Parser
+  Cli-->Compiler
 ```
