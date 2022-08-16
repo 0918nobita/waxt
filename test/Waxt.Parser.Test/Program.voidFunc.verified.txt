@@ -1,0 +1,55 @@
+﻿{
+  "type": "funcDef",
+  "name": "add-and-store",
+  "result": {
+    "type": "unit"
+  },
+  "parameters": [
+    {
+      "name": "addr",
+      "ty": {
+        "type": "i32",
+        "at": "1:27-1:29"
+      }
+    },
+    {
+      "name": "x",
+      "ty": {
+        "type": "i32",
+        "at": "1:33-1:35"
+      }
+    },
+    {
+      "name": "y",
+      "ty": {
+        "type": "i32",
+        "at": "1:39-1:41"
+      }
+    }
+  ],
+  "body": [
+    {
+      "type": "I32Store",
+      "addr": {
+        "type": "Var",
+        "name": "addr",
+        "at": "1:55-1:58"
+      },
+      "content": {
+        "type": "I32Add",
+        "lhs": {
+          "type": "Var",
+          "name": "x",
+          "at": "1:69-1:69"
+        },
+        "rhs": {
+          "type": "Var",
+          "name": "y",
+          "at": "1:71-1:71"
+        },
+        "at": "1:60-1:72"
+      },
+      "at": "1:44-1:73"
+    }
+  ]
+}

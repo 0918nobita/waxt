@@ -8,27 +8,46 @@ open Waxt.Location
 open Waxt.Parser
 open Waxt.UntypedAst
 
+let parsingToSExprShouldSucceed (src: string) =
+    let (sExpr, rest) =
+        Expect.wantOk (lex src) "lexical analysis should succeed"
+        |> ParseSExpr.parseSExpr Pos.origin
+        |> (fun parseResult -> Expect.wantOk parseResult "Parsing to S-expression should succeed")
+
+    Expect.isEmpty rest "Parser should consume all tokens"
+    sExpr
+
+let parsingToStmtShouldSucceed (sExpr: SExpr) =
+    sExpr
+    |> ParseUntypedAst.parseStmt
+    |> (fun parseResult -> Expect.wantOk parseResult "Parsing to statement should succeed")
+    |> Stmt.toJson
+    |> Encode.toString 2
+
 [<Tests>]
-let parserTest =
-    testTask "parseSExpr" {
-        let (sExpr, rest) =
-            Expect.wantOk
-                (lex "(func foo i32 [x i32 y i32] (i32.mul (i32.add 1 2) 4))")
-                "lexical analysis should succeed"
-            |> ParseSExpr.parseSExpr Pos.origin
-            |> (fun parseResult -> Expect.wantOk parseResult "Parsing to S-expression should succeed")
+let returnI32 =
+    testTask "returnI32" {
+        let sExpr =
+            parsingToSExprShouldSucceed "(func foo i32 [x i32 y i32] (i32.mul (i32.add 1 2) 4))"
 
-        Expect.isEmpty rest "Parser should consume all tokens"
+        do! Verifier.Verify("returnI32SExpr", SExpr.toString sExpr)
 
-        do! Verifier.Verify("parseSExpr", SExpr.toString sExpr)
+        let stmt = parsingToStmtShouldSucceed sExpr
 
-        let result =
-            ParseUntypedAst.parseStmt sExpr
-            |> (fun parseResult -> Expect.wantOk parseResult "Parsing to Stmt should succeed")
-            |> Stmt.toJson
-            |> Encode.toString 2
+        do! Verifier.Verify("returnI32", stmt)
+    }
 
-        do! Verifier.Verify("parseStmt", result)
+[<Tests>]
+let voidFunc =
+    testTask "voidFunc" {
+        let sExpr =
+            parsingToSExprShouldSucceed "(func add-and-store [addr i32 x i32 y i32] (i32.store addr (i32.add x y)))"
+
+        do! Verifier.Verify("voidFuncSExpr", SExpr.toString sExpr)
+
+        let stmt = parsingToStmtShouldSucceed sExpr
+
+        do! Verifier.Verify("voidFunc", stmt)
     }
 
 [<EntryPoint>]
