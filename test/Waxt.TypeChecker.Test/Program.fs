@@ -1,4 +1,4 @@
-module Waxt.Compiler.Test.TypeCheck
+module Waxt.TypeChecker.Test.Program
 
 open Expecto
 open Thoth.Json.Net
@@ -49,3 +49,6 @@ let varTest =
 
         do! Verifier.Verify("var", result)
     }
+
+[<EntryPoint>]
+let main argv = runTestsInAssembly defaultConfig argv

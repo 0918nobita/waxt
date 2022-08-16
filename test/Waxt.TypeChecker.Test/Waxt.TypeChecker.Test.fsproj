@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Waxt.TypeChecker.Test</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Waxt.Location\Waxt.Location.fsproj" />
+    <ProjectReference Include="..\..\src\Waxt.Type\Waxt.Type.fsproj" />
+    <ProjectReference Include="..\..\src\Waxt.TypeChecker\Waxt.TypeChecker.fsproj" />
+    <ProjectReference Include="..\..\src\Waxt.TypedAst\Waxt.TypedAst.fsproj" />
+    <ProjectReference Include="..\..\src\Waxt.UntypedAst\Waxt.UntypedAst.fsproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
