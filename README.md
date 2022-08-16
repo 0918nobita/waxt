@@ -72,11 +72,35 @@ WAT (コンパイル後) :
 ## CLI の起動方法
 
 ```bash
-dotnet run --project cli -- example/return-i32.waxt
+dotnet run --project src/Waxt.Cli -- example/return-i32.waxt
 ```
 
 ## テストの実行方法
 
 ```bash
-dotnet run --project test
+./test.sh
+```
+
+## プロジェクトの依存関係
+
+```mermaid
+graph TB
+  Token-->Location
+  Lexer-->Location
+  Lexer-->Token
+  UntypedAst-->Location
+  UntypedAst-->Type
+  Parser-->Location
+  Parser-->Token
+  Parser-->UntypedAst
+  TypedAst-->Location
+  TypedAst-->Type
+  TypeChecker-->Location
+  TypeChecker-->Type
+  TypeChecker-->TypedAst
+  TypeChecker-->UntypedAst
+  Compiler-->Lexer
+  Compiler-->Location
+  Compiler-->Parser
+  Cli-->Compiler
 ```
