@@ -1,12 +1,14 @@
 [<AutoOpen>]
 module Waxt.TypeChecker.CheckAst
 
+open System
+open System.Collections.Generic
 open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
 type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: seq<'K * int>) =
-    let keyIndexDict = new System.Collections.Generic.Dictionary<'K, int>()
+    let keyIndexDict = new Dictionary<'K, int>()
 
     do mapping |> Seq.iter keyIndexDict.Add
 
@@ -17,6 +19,24 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
     member this.Add(key: 'K, value: 'V) =
         this.Mapping.Add(key, this.Values.Count)
         this.Values.Add(value)
+
+    member this.Item
+        with get (key: 'K) = this.Values[this.Mapping[key]]
+
+    member this.TryItem(key: 'K) : option<'V> =
+        try
+            Some this.Values[this.Mapping[key]]
+        with
+        | :? KeyNotFoundException -> None
+        | :? ArgumentOutOfRangeException -> failwith "Fatal error: illegal state in IndexedMap"
+
+    member this.ItemByIndex(index: int) = this.Values[index]
+
+    member this.TryItemByIndex(index: int) : option<'V> =
+        try
+            Some this.Values[index]
+        with
+        | :? ArgumentOutOfRangeException -> None
 
     static member Empty = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
 

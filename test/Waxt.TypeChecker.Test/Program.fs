@@ -11,8 +11,10 @@ open Waxt.UntypedAst
 
 let funcs = IndexedMap<FuncName, FuncSig>.Empty
 let parameters = IndexedMap<string, Type>.Empty
-funcs.Add(FuncName.make "foo", FuncSig.make parameters (I32 None))
-printfn "%A" funcs
+let funcName = FuncName.make "foo"
+let funcSig = FuncSig.make parameters (I32 None)
+funcs.Add(funcName, funcSig)
+printfn "%A" funcs[funcName]
 
 let typeCheckShouldSucceed (typeEnv: TypeEnv) (expr: Expr) =
     expr
