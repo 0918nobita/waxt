@@ -9,6 +9,11 @@ open Waxt.TypeChecker
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
+let funcs = IndexedMap<FuncName, FuncSig>.Empty
+let parameters = IndexedMap<string, Type>.Empty
+funcs.Add(FuncName.make "foo", FuncSig.make parameters (I32 None))
+printfn "%A" funcs
+
 let typeCheckShouldSucceed (typeEnv: TypeEnv) (expr: Expr) =
     expr
     |> checkType typeEnv
