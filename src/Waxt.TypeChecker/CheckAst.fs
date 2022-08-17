@@ -7,6 +7,7 @@ open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
+/// キーと整数インデックスの両方で要素にアクセス可能なマップ
 type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: seq<'K * int>) =
     let keyIndexDict = new Dictionary<'K, int>()
 
