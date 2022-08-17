@@ -17,4 +17,12 @@ let indexedMapTest =
         Expect.equal indexedMap["bar"] (Some "barValue") "IndexedMap should contain bar"
         Expect.equal (indexedMap.TryNth 0) (Some "fooValue") "foo should be specified by index 0"
         Expect.equal (indexedMap.TryNth 1) (Some "barValue") "bar should be specified by index 1"
+
+        let actual = indexedMap |> Seq.toList
+
+        let expected =
+            [ ("foo", "fooValue")
+              ("bar", "barValue") ]
+
+        Expect.equal actual expected "Convert IndexedMap to (key, value) list"
     }
