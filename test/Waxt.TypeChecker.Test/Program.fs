@@ -9,6 +9,19 @@ open Waxt.TypeChecker
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
+[<Tests>]
+let getFuncSigsTest =
+    test "getFuncSigs" {
+        let funcDef =
+            FuncDef("foo", I32 None, [], [ I32Const(12, Range.fromPos Pos.origin) ])
+
+        Expect.wantOk (getFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
+        |> ignore
+
+        Expect.wantError (getFuncSigs [ funcDef; funcDef ]) "duplicate function definition"
+        |> ignore
+    }
+
 let typeCheckShouldSucceed (typeEnv: TypeEnv) (expr: Expr) =
     expr
     |> checkType typeEnv

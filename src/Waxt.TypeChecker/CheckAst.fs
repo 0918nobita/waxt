@@ -38,6 +38,10 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
 
     member this.Exists(key: 'K) : bool = this.Mapping.ContainsKey key
 
+    member this.DebugPrint() =
+        for keyValuePair in this.Mapping do
+            printfn "%A: %A" keyValuePair.Key this.Values[keyValuePair.Value]
+
     static member Empty = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
 
 type FuncName = private FuncName of name: string
@@ -55,17 +59,28 @@ let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list
     let sigs = IndexedMap<FuncName, FuncSig * list<Expr>>.Empty
 
     stmts
-    |> List.traverseResultM (fun (FuncDef (name, result, parameters, body)) ->
+    |> List.traverseResultM (fun (FuncDef (name, resultType, parameters, body)) ->
         let funcName = FuncName.make name
 
         if sigs.Exists funcName then
-            Error "duplicate function definition"
+            Error "duplicate function name"
         else
             let funcParams = IndexedMap<string, Type>.Empty
-            // TODO: 仮引数リストをチェックして FuncSig に反映する
-            let funcSig = FuncSig(funcParams, result)
-            sigs.Add(funcName, (funcSig, body))
-            Ok())
+
+            result {
+                let! _ =
+                    parameters
+                    |> List.traverseResultM (fun (paramName, paramType) ->
+                        if funcParams.Exists paramName then
+                            Error "duplicate parameter"
+                        else
+                            funcParams.Add(paramName, paramType)
+                            Ok())
+
+                let funcSig = FuncSig(funcParams, resultType)
+                sigs.Add(funcName, (funcSig, body))
+                return ()
+            })
     |> Result.map (fun _ -> sigs)
 
 /// 各関数の本体を型付けする
