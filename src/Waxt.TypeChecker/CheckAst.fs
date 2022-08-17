@@ -22,18 +22,14 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
         this.Values.Add(value)
 
     member this.Item
-        with get (key: 'K) = this.Values[this.Mapping[key]]
+        with get (key: 'K): option<'V> =
+            try
+                Some this.Values[this.Mapping[key]]
+            with
+            | :? KeyNotFoundException -> None
+            | :? ArgumentOutOfRangeException -> failwith "Fatal error: illegal state in IndexedMap"
 
-    member this.TryItem(key: 'K) : option<'V> =
-        try
-            Some this.Values[this.Mapping[key]]
-        with
-        | :? KeyNotFoundException -> None
-        | :? ArgumentOutOfRangeException -> failwith "Fatal error: illegal state in IndexedMap"
-
-    member this.ItemByIndex(index: int) = this.Values[index]
-
-    member this.TryItemByIndex(index: int) : option<'V> =
+    member this.TryNth(index: int) : option<'V> =
         try
             Some this.Values[index]
         with
