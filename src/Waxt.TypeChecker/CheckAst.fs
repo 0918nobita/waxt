@@ -1,6 +1,7 @@
 [<AutoOpen>]
 module Waxt.TypeChecker.CheckAst
 
+open FsToolkit.ErrorHandling
 open System
 open System.Collections.Generic
 open Waxt.Type
@@ -13,7 +14,7 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
 
     do mapping |> Seq.iter keyIndexDict.Add
 
-    member val private Values = ResizeArray(values)
+    member val private Values = ResizeArray values
 
     member val private Mapping = keyIndexDict
 
@@ -35,6 +36,8 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
         with
         | :? ArgumentOutOfRangeException -> None
 
+    member this.Exists(key: 'K) : bool = this.Mapping.ContainsKey key
+
     static member Empty = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
 
 type FuncName = private FuncName of name: string
@@ -47,4 +50,24 @@ type FuncSig = private FuncSig of parameters: IndexedMap<string, Type> * result:
 module FuncSig =
     let make parameters result = FuncSig(parameters, result)
 
-let checkAst (stmts: list<Stmt>) : list<TypedExpr> = failwith "not implemented"
+/// 各関数のシグネチャをチェック・取得する
+let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list<Expr>>, string> =
+    let sigs = IndexedMap<FuncName, FuncSig * list<Expr>>.Empty
+
+    stmts
+    |> List.traverseResultM (fun (FuncDef (name, result, parameters, body)) ->
+        let funcName = FuncName.make name
+
+        if sigs.Exists funcName then
+            Error "duplicate function definition"
+        else
+            let funcParams = IndexedMap<string, Type>.Empty
+            // TODO: 仮引数リストをチェックして FuncSig に反映する
+            let funcSig = FuncSig(funcParams, result)
+            sigs.Add(funcName, (funcSig, body))
+            Ok())
+    |> Result.map (fun _ -> sigs)
+
+/// 各関数の本体を型付けする
+let typeFuncBodies (untyped: IndexedMap<FuncName, FuncSig * Expr>) : IndexedMap<FuncName, FuncSig * list<TypedExpr>> =
+    failwith "not implemented"
