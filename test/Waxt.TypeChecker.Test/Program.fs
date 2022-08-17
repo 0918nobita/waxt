@@ -15,11 +15,13 @@ let getFuncSigsTest =
         let funcDef =
             FuncDef("foo", I32 None, [], [ I32Const(12, Range.fromPos Pos.origin) ])
 
-        Expect.wantOk (getFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
-        |> ignore
+        let untypedFuncs =
+            Expect.wantOk (getFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
 
         Expect.wantError (getFuncSigs [ funcDef; funcDef ]) "duplicate function definition"
         |> ignore
+
+        typeFuncBodies untypedFuncs |> ignore
     }
 
 let typeCheckShouldSucceed (typeEnv: TypeEnv) (expr: Expr) =

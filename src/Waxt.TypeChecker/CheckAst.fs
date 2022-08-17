@@ -25,6 +25,7 @@ let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list
         let funcName = FuncName.make name
 
         if sigs.Exists funcName then
+            // TODO: もっと詳細なエラーメッセージを返す
             Error "duplicate function name"
         else
             let funcParams = IndexedMap<string, Type>.Empty
@@ -34,6 +35,7 @@ let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list
                     parameters
                     |> List.traverseResultM (fun (paramName, paramType) ->
                         if funcParams.Exists paramName then
+                            // TODO: もっと詳細なエラーメッセージを返す
                             Error "duplicate parameter"
                         else
                             funcParams.Add(paramName, paramType)
@@ -45,6 +47,24 @@ let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list
             })
     |> Result.map (fun _ -> sigs)
 
+type UntypedFuncs = IndexedMap<FuncName, FuncSig * list<Expr>>
+type TypedFuncs = IndexedMap<FuncName, FuncSig * list<TypedExpr>>
+
 /// 各関数の本体を型付けする
-let typeFuncBodies (untyped: IndexedMap<FuncName, FuncSig * Expr>) : IndexedMap<FuncName, FuncSig * list<TypedExpr>> =
-    failwith "not implemented"
+let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
+    let typedFuncs =
+        IndexedMap<FuncName, FuncSig * list<TypedExpr>>
+            .Empty
+
+    for (funcName, (FuncSig (parameters, resultType), body)) in untypedFuncs do
+        printfn "%A" funcName
+        let parameters = Seq.toList parameters
+        printfn "  parameters: %A" parameters
+        printfn "  body: %A" body
+
+        // TODO: 仮引数リストの内容を反映して型付けする
+        body
+        |> List.map (checkType TypeEnv.empty)
+        |> printfn "  typedExprs: %A"
+
+    typedFuncs
