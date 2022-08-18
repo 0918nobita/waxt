@@ -45,19 +45,33 @@ let getFuncSigs (stmts: list<FuncDef>) : Result<UntypedFuncs, TypeError> =
 
 type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
+module SeqExt =
+    let iterWhileOk (f: 't -> Result<unit, 'e>) (sequence: seq<'t>) : Result<unit, 'e> =
+        let folder (state: Result<unit, 'e>) (item: 't) = state |> Result.bind (fun () -> f item)
+
+        sequence |> Seq.fold folder (Ok())
+
 /// 各関数の本体を型付けする
-let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
+let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> =
     let typedFuncs = TypedFuncs(untypedFuncs.Count)
 
-    for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
-        printfn "%s" funcName
-        let parameters = Seq.toList parameters
-        printfn "  parameters: %A" parameters
-        printfn "  body: %A" body
+    untypedFuncs
+    |> SeqExt.iterWhileOk (fun (funcName, (funcSig, body)) ->
+        let (FuncSig (parameters, _, _)) = funcSig
 
-        // TODO: 仮引数リストの内容を反映して型付けする
-        body
-        |> List.map (checkType TypeEnv.empty)
-        |> printfn "  typedExprs: %A"
+        let typeEnv =
+            parameters
+            |> Seq.toList
+            |> List.map (fun (name, (_at, ty)) -> (name, ty))
+            |> TypeEnv.ofList
 
-    typedFuncs
+        result {
+            let! typedBody =
+                body
+                |> List.map (checkType typeEnv)
+                |> List.sequenceResultM
+
+            typedFuncs.Add(funcName, (funcSig, typedBody))
+            return ()
+        })
+    |> Result.map (fun _ -> typedFuncs)

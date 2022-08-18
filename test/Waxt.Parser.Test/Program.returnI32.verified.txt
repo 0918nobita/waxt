@@ -1,6 +1,10 @@
 ﻿{
   "type": "funcDef",
-  "name": "foo",
+  "name": {
+    "type": "funcName",
+    "name": "foo",
+    "at": "1:7-1:9"
+  },
   "result": {
     "type": "i32",
     "at": "1:11-1:13"
@@ -8,6 +12,7 @@
   "parameters": [
     {
       "name": "x",
+      "at": "1:16-1:16",
       "ty": {
         "type": "i32",
         "at": "1:18-1:20"
@@ -15,6 +20,7 @@
     },
     {
       "name": "y",
+      "at": "1:22-1:22",
       "ty": {
         "type": "i32",
         "at": "1:24-1:26"

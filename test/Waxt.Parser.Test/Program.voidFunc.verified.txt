@@ -1,12 +1,17 @@
 ﻿{
   "type": "funcDef",
-  "name": "add-and-store",
+  "name": {
+    "type": "funcName",
+    "name": "add-and-store",
+    "at": "1:7-1:19"
+  },
   "result": {
     "type": "unit"
   },
   "parameters": [
     {
       "name": "addr",
+      "at": "1:22-1:25",
       "ty": {
         "type": "i32",
         "at": "1:27-1:29"
@@ -14,6 +19,7 @@
     },
     {
       "name": "x",
+      "at": "1:31-1:31",
       "ty": {
         "type": "i32",
         "at": "1:33-1:35"
@@ -21,6 +27,7 @@
     },
     {
       "name": "y",
+      "at": "1:37-1:37",
       "ty": {
         "type": "i32",
         "at": "1:39-1:41"

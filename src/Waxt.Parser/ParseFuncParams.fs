@@ -4,18 +4,18 @@ open FsToolkit.ErrorHandling
 open Waxt.Location
 open Waxt.Type
 
-let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Type>> =
+let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Range * Type>> =
     function
     | [] -> Ok []
 
     | [ Atom (_, range) ] ->
         Error(ParseError("Expected type name, but reached last element of list", Range.fromPos (Range.``end`` range)))
 
-    | Atom (param, _) :: Atom (ty, range) :: rest ->
+    | Atom (param, paramRange) :: Atom (ty, tyRange) :: rest ->
         result {
-            let! ty = ParseType.parseType range ty
+            let! ty = ParseType.parseType tyRange ty
             let! parameters = parseFuncParams rest
-            return (param, ty) :: parameters
+            return (param, paramRange, ty) :: parameters
         }
 
     | Atom _ :: expr :: _ ->
