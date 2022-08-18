@@ -40,6 +40,8 @@ type IndexedMapEnumerator<'K, 'V>
 type IndexedMap<'K, 'V when 'K: comparison> private (values: ResizeArray<'V>, mapping: Dictionary<'K, int>) =
     new(capacity: int) = IndexedMap<'K, 'V>(ResizeArray(capacity), new Dictionary<'K, int>())
 
+    member _.Count = values.Count
+
     member _.Add(key: 'K, value: 'V) =
         mapping.Add(key, values.Count)
         values.Add(value)
