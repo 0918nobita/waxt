@@ -47,7 +47,7 @@ type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
-    let typedFuncs = TypedFuncs(100)
+    let typedFuncs = TypedFuncs(untypedFuncs.Count)
 
     for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
         printfn "%s" funcName
