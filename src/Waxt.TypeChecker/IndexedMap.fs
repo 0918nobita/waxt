@@ -9,7 +9,7 @@ type IndexedMapEnumerator<'K, 'V>
         valuesEnumerator: IEnumerator<'V>,
         mappingEnumerator: IEnumerator<KeyValuePair<'K, int>>
     ) =
-    member _.current_
+    member _.current
         with private get () = (mappingEnumerator.Current.Key, valuesEnumerator.Current)
 
     interface IDisposable with
@@ -18,10 +18,10 @@ type IndexedMapEnumerator<'K, 'V>
             mappingEnumerator.Dispose()
 
     interface IEnumerator<'K * 'V> with
-        member this.Current = this.current_
+        member this.Current = this.current
 
     interface Collections.IEnumerator with
-        member this.Current = this.current_ :> obj
+        member this.Current = this.current
 
         member _.MoveNext() =
             let k = mappingEnumerator.MoveNext()
@@ -37,45 +37,38 @@ type IndexedMapEnumerator<'K, 'V>
             valuesEnumerator.Reset()
 
 /// キーと整数インデックスの両方で要素にアクセス可能なマップ
-type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: seq<'K * int>) =
-    let keyIndexDict = new Dictionary<'K, int>()
+type IndexedMap<'K, 'V when 'K: comparison> private (values: ResizeArray<'V>, mapping: Dictionary<'K, int>) =
+    new(capacity: int) = IndexedMap<'K, 'V>(ResizeArray(capacity), new Dictionary<'K, int>())
 
-    do mapping |> Seq.iter keyIndexDict.Add
+    member _.Add(key: 'K, value: 'V) =
+        mapping.Add(key, values.Count)
+        values.Add(value)
 
-    member val private Values = ResizeArray values
-
-    member val private Mapping = keyIndexDict
-
-    new() = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
-
-    member this.Add(key: 'K, value: 'V) =
-        this.Mapping.Add(key, this.Values.Count)
-        this.Values.Add(value)
-
-    member this.Item
+    member _.Item
         with get (key: 'K): option<'V> =
             try
-                Some this.Values[this.Mapping[key]]
+                Some values[mapping[key]]
             with
             | :? KeyNotFoundException -> None
             | :? ArgumentOutOfRangeException -> failwith "Fatal error: illegal state in IndexedMap"
 
-    member this.TryNth(index: int) : option<'V> =
+    member _.TryNth(index: int) : option<'V> =
         try
-            Some this.Values[index]
+            Some values[index]
         with
         | :? ArgumentOutOfRangeException -> None
 
-    member this.Exists(key: 'K) : bool = this.Mapping.ContainsKey key
+    member _.Exists(key: 'K) : bool = mapping.ContainsKey key
 
-    member this.DebugPrint() =
-        for keyValuePair in this.Mapping do
-            printfn "%A: %A" keyValuePair.Key this.Values[keyValuePair.Value]
+    member _.DebugPrint() =
+        for keyValuePair in mapping do
+            printfn "%A: %A" keyValuePair.Key values[keyValuePair.Value]
+
+    member private _.getEnumerator() =
+        new IndexedMapEnumerator<'K, 'V>(values.GetEnumerator(), mapping.GetEnumerator())
 
     interface Collections.IEnumerable with
-        member this.GetEnumerator() =
-            new IndexedMapEnumerator<'K, 'V>(this.Values.GetEnumerator(), this.Mapping.GetEnumerator())
+        member this.GetEnumerator() = this.getEnumerator ()
 
     interface IEnumerable<'K * 'V> with
-        member this.GetEnumerator() =
-            new IndexedMapEnumerator<'K, 'V>(this.Values.GetEnumerator(), this.Mapping.GetEnumerator())
+        member this.GetEnumerator() = this.getEnumerator ()

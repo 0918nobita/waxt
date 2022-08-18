@@ -13,14 +13,14 @@ type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
 
 /// 各関数のシグネチャをチェック・取得する
 let getFuncSigs (stmts: list<FuncDef>) : Result<UntypedFuncs, TypeError> =
-    let sigs = UntypedFuncs()
+    let sigs = UntypedFuncs(100)
 
     let registerFuncSig (FuncDef (FuncName (name, at), resultType, parameters, body)) : Result<unit, TypeError> =
         if sigs.Exists name then
             let (FuncSig (_, _, at), _) = sigs[name] |> Option.get
             Error(TypeError($"Duplicate function name `%s{name}`", Some at))
         else
-            let funcParams = IndexedMap<string, Range * Type>()
+            let funcParams = IndexedMap<string, Range * Type>(10)
 
             let registerFuncParam (paramName, at, paramType) : Result<unit, TypeError> =
                 if funcParams.Exists paramName then
@@ -47,7 +47,7 @@ type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
-    let typedFuncs = TypedFuncs()
+    let typedFuncs = TypedFuncs(100)
 
     for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
         printfn "%s" funcName
