@@ -12,8 +12,9 @@ open Waxt.UntypedAst
 [<Tests>]
 let getFuncSigsTest =
     test "getFuncSigs" {
+        let range = Range.fromPos Pos.origin
         let funcDef =
-            FuncDef("foo", I32 None, [], [ I32Const(12, Range.fromPos Pos.origin) ])
+            FuncDef(FuncName("foo", range), I32 None, [], [ I32Const(12, range) ])
 
         let untypedFuncs =
             Expect.wantOk (getFuncSigs [ funcDef ]) "compile untyped statements to function signatures"

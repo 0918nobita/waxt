@@ -6,24 +6,17 @@ open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
-type FuncName = private FuncName of name: string
-
-module FuncName =
-    let make name = FuncName name
-
 type FuncSig = private FuncSig of parameters: IndexedMap<string, Type> * result: Type
 
 module FuncSig =
     let make parameters result = FuncSig(parameters, result)
 
 /// 各関数のシグネチャをチェック・取得する
-let getFuncSigs (stmts: list<Stmt>) : Result<IndexedMap<FuncName, FuncSig * list<Expr>>, string> =
+let getFuncSigs (stmts: list<FuncDef>) : Result<IndexedMap<FuncName, FuncSig * list<Expr>>, string> =
     let sigs = IndexedMap<FuncName, FuncSig * list<Expr>>.Empty
 
     stmts
-    |> List.traverseResultM (fun (FuncDef (name, resultType, parameters, body)) ->
-        let funcName = FuncName.make name
-
+    |> List.traverseResultM (fun (FuncDef (funcName, resultType, parameters, body)) ->
         if sigs.Exists funcName then
             // TODO: もっと詳細なエラーメッセージを返す
             Error "duplicate function name"
