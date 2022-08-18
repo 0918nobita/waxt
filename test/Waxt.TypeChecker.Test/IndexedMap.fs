@@ -6,7 +6,7 @@ open Waxt.TypeChecker
 [<Tests>]
 let indexedMapTest =
     test "indexedMap" {
-        let indexedMap = IndexedMap<string, string>.Empty
+        let indexedMap = IndexedMap<string, string>()
         Expect.equal indexedMap["foo"] None "IndexedMap should be empty"
 
         indexedMap.Add("foo", "fooValue")

@@ -7,47 +7,50 @@ open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
-type FuncSig = FuncSig of parameters: IndexedMap<string, Type> * result: Type * at: Range
+type FuncSig = FuncSig of parameters: IndexedMap<string, Range * Type> * result: Type * at: Range
 
 type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
 
 /// 各関数のシグネチャをチェック・取得する
 let getFuncSigs (stmts: list<FuncDef>) : Result<UntypedFuncs, TypeError> =
-    let sigs = UntypedFuncs.Empty
+    let sigs = UntypedFuncs()
 
-    stmts
-    |> List.traverseResultM (fun (FuncDef (FuncName (name, at), resultType, parameters, body)) ->
+    let registerFuncSig (FuncDef (FuncName (name, at), resultType, parameters, body)) : Result<unit, TypeError> =
         if sigs.Exists name then
             let (FuncSig (_, _, at), _) = sigs[name] |> Option.get
-            Error(TypeError($"duplicate function name `%s{name}`", Some at))
+            Error(TypeError($"Duplicate function name `%s{name}`", Some at))
         else
-            let funcParams = IndexedMap<string, Type>.Empty
+            let funcParams = IndexedMap<string, Range * Type>()
+
+            let registerFuncParam (paramName, at, paramType) : Result<unit, TypeError> =
+                if funcParams.Exists paramName then
+                    Error(TypeError($"Duplicate parameter `%s{paramName}`", Some at))
+                else
+                    funcParams.Add(paramName, (at, paramType))
+                    Ok()
 
             result {
                 let! _ =
                     parameters
-                    |> List.traverseResultM (fun (paramName, paramType) ->
-                        if funcParams.Exists paramName then
-                            // TODO: もっと詳細なエラーメッセージを返す
-                            Error(TypeError("duplicate parameter", None))
-                        else
-                            funcParams.Add(paramName, paramType)
-                            Ok())
+                    |> List.traverseResultM registerFuncParam
 
                 let funcSig = FuncSig(funcParams, resultType, at)
                 sigs.Add(name, (funcSig, body))
                 return ()
-            })
+            }
+
+    stmts
+    |> List.traverseResultM registerFuncSig
     |> Result.map (fun _ -> sigs)
 
 type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
-    let typedFuncs = TypedFuncs.Empty
+    let typedFuncs = TypedFuncs()
 
     for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
-        printfn "%A" funcName
+        printfn "%s" funcName
         let parameters = Seq.toList parameters
         printfn "  parameters: %A" parameters
         printfn "  body: %A" body

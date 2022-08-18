@@ -46,6 +46,8 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
 
     member val private Mapping = keyIndexDict
 
+    new() = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
+
     member this.Add(key: 'K, value: 'V) =
         this.Mapping.Add(key, this.Values.Count)
         this.Values.Add(value)
@@ -69,8 +71,6 @@ type IndexedMap<'K, 'V when 'K: comparison> private (values: seq<'V>, mapping: s
     member this.DebugPrint() =
         for keyValuePair in this.Mapping do
             printfn "%A: %A" keyValuePair.Key this.Values[keyValuePair.Value]
-
-    static member Empty = IndexedMap<'K, 'V>(Seq.empty, Seq.empty)
 
     interface Collections.IEnumerable with
         member this.GetEnumerator() =

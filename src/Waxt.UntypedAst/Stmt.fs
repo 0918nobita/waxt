@@ -2,6 +2,7 @@
 module Waxt.UntypedAst.Stmt
 
 open Thoth.Json.Net
+open Waxt.Location
 open Waxt.Type
 
 type Stmt = FuncDefStmt of FuncDef
@@ -12,8 +13,9 @@ module Stmt =
         | FuncDefStmt (FuncDef (name, resultTy, parameters, body)) ->
             let parameters =
                 parameters
-                |> List.map (fun (name, ty) ->
+                |> List.map (fun (name, at, ty) ->
                     Encode.object [ "name", Encode.string name
+                                    "at", Encode.string (Range.toString at)
                                     "ty", Type.toJson ty ])
                 |> Encode.list
 
