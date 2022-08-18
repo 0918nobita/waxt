@@ -2,24 +2,24 @@
 module Waxt.TypeChecker.CheckAst
 
 open FsToolkit.ErrorHandling
+open Waxt.Location
 open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
-type FuncSig = private FuncSig of parameters: IndexedMap<string, Type> * result: Type
+type FuncSig = FuncSig of parameters: IndexedMap<string, Type> * result: Type * at: Range
 
-module FuncSig =
-    let make parameters result = FuncSig(parameters, result)
+type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
 
 /// 各関数のシグネチャをチェック・取得する
-let getFuncSigs (stmts: list<FuncDef>) : Result<IndexedMap<FuncName, FuncSig * list<Expr>>, string> =
-    let sigs = IndexedMap<FuncName, FuncSig * list<Expr>>.Empty
+let getFuncSigs (stmts: list<FuncDef>) : Result<UntypedFuncs, TypeError> =
+    let sigs = IndexedMap<string, FuncSig * list<Expr>>.Empty
 
     stmts
-    |> List.traverseResultM (fun (FuncDef (funcName, resultType, parameters, body)) ->
-        if sigs.Exists funcName then
-            // TODO: もっと詳細なエラーメッセージを返す
-            Error "duplicate function name"
+    |> List.traverseResultM (fun (FuncDef (FuncName (name, at), resultType, parameters, body)) ->
+        if sigs.Exists name then
+            let (FuncSig (_, _, at), _) = sigs[name] |> Option.get
+            Error(TypeError($"duplicate function name `%s{name}`", Some at))
         else
             let funcParams = IndexedMap<string, Type>.Empty
 
@@ -29,27 +29,26 @@ let getFuncSigs (stmts: list<FuncDef>) : Result<IndexedMap<FuncName, FuncSig * l
                     |> List.traverseResultM (fun (paramName, paramType) ->
                         if funcParams.Exists paramName then
                             // TODO: もっと詳細なエラーメッセージを返す
-                            Error "duplicate parameter"
+                            Error(TypeError("duplicate parameter", None))
                         else
                             funcParams.Add(paramName, paramType)
                             Ok())
 
-                let funcSig = FuncSig(funcParams, resultType)
-                sigs.Add(funcName, (funcSig, body))
+                let funcSig = FuncSig(funcParams, resultType, at)
+                sigs.Add(name, (funcSig, body))
                 return ()
             })
     |> Result.map (fun _ -> sigs)
 
-type UntypedFuncs = IndexedMap<FuncName, FuncSig * list<Expr>>
-type TypedFuncs = IndexedMap<FuncName, FuncSig * list<TypedExpr>>
+type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
     let typedFuncs =
-        IndexedMap<FuncName, FuncSig * list<TypedExpr>>
+        IndexedMap<string, FuncSig * list<TypedExpr>>
             .Empty
 
-    for (funcName, (FuncSig (parameters, resultType), body)) in untypedFuncs do
+    for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
         printfn "%A" funcName
         let parameters = Seq.toList parameters
         printfn "  parameters: %A" parameters
