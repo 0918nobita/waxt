@@ -13,7 +13,7 @@ type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
 
 /// 各関数のシグネチャをチェック・取得する
 let getFuncSigs (stmts: list<FuncDef>) : Result<UntypedFuncs, TypeError> =
-    let sigs = IndexedMap<string, FuncSig * list<Expr>>.Empty
+    let sigs = UntypedFuncs.Empty
 
     stmts
     |> List.traverseResultM (fun (FuncDef (FuncName (name, at), resultType, parameters, body)) ->
@@ -44,9 +44,7 @@ type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : TypedFuncs =
-    let typedFuncs =
-        IndexedMap<string, FuncSig * list<TypedExpr>>
-            .Empty
+    let typedFuncs = TypedFuncs.Empty
 
     for (funcName, (FuncSig (parameters, resultType, at), body)) in untypedFuncs do
         printfn "%A" funcName
