@@ -5,20 +5,23 @@ open FsToolkit.ErrorHandling
 open Waxt.Lexer
 open Waxt.Location
 open Waxt.Parser
+open Waxt.TypeChecker
 open Waxt.UntypedAst
 
 type CompileError =
     private
     | FromLexer of LexError
     | FromParser of ParseError
+    | FromTypeChecker of TypeError
 
 module CompileError =
     let toString =
         function
         | FromLexer lexError -> LexError.toString lexError
         | FromParser parseError -> ParseError.toString parseError
+        | FromTypeChecker typeError -> TypeError.toString typeError
 
-let compile src : Result<list<Stmt>, list<CompileError>> =
+let compile src : Result<TypedFuncs, list<CompileError>> =
     result {
         let! tokens =
             lex src
@@ -32,11 +35,22 @@ let compile src : Result<list<Stmt>, list<CompileError>> =
         | [] -> ()
         | tok :: _ -> return! Error [ FromParser(ParseError("Syntax error", (tok :> ILocatable).Locate())) ]
 
-        return!
+        let! a =
             sExprs
             |> List.map (
                 ParseUntypedAst.parseStmt
                 >> Result.mapError FromParser
             )
             |> List.sequenceResultA
+            |> Result.map (fun (stmts) ->
+                stmts
+                |> List.map (fun (FuncDefStmt funcDef) -> funcDef))
+
+        let! untypedFuncs =
+            checkFuncSigs a
+            |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
+
+        return!
+            typeFuncBodies untypedFuncs
+            |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
     }

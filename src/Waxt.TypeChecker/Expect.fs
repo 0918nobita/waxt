@@ -4,7 +4,7 @@ module Waxt.TypeChecker.Expect
 open Waxt.Type
 
 let expectType (expected: Type) (actual: Type) =
-    if expected = actual then
+    if Type.equal expected actual then
         Ok()
     else
         let expected = Type.toString expected

@@ -13,6 +13,8 @@
     <ProjectReference Include="..\Waxt.Lexer\Waxt.Lexer.fsproj" />
     <ProjectReference Include="..\Waxt.Location\Waxt.Location.fsproj" />
     <ProjectReference Include="..\Waxt.Parser\Waxt.Parser.fsproj" />
+    <ProjectReference Include="..\Waxt.TypeChecker\Waxt.TypeChecker.fsproj" />
+    <ProjectReference Include="..\Waxt.TypedAst\Waxt.TypedAst.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

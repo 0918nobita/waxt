@@ -10,6 +10,13 @@ type Type =
     | I64 of option<Range>
 
 module Type =
+    let equal (a: Type) (b: Type) : bool =
+        match a, b with
+        | Unit _, Unit _ -> true
+        | I32 _, I32 _ -> true
+        | I64 _, I64 _ -> true
+        | _ -> false
+
     let tryGetRange =
         function
         | Unit range

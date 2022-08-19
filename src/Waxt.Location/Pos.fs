@@ -2,7 +2,16 @@
 module Waxt.Location.Pos
 
 /// ソースファイル上の位置
-type Pos = private Pos of line: uint * col: uint
+type Pos =
+    private
+    | Pos of line: uint * col: uint
+
+    override this.ToString() =
+        match this with
+        | Pos (line, col) ->
+            let line = line + 1u
+            let col = col + 1u
+            $"%i{line}:%i{col}"
 
 module Pos =
     let origin = Pos(0u, 0u)
@@ -13,10 +22,7 @@ module Pos =
 
     let col (Pos (_, col)) = col
 
-    let toString (Pos (line, col)) =
-        let line = line + 1u
-        let col = col + 1u
-        $"%i{line}:%i{col}"
+    let toString (pos: Pos) = pos.ToString()
 
     let nextCol (Pos (line, col)) = Pos(line, col + 1u)
 
