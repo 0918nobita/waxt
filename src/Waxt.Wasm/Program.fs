@@ -2,14 +2,23 @@ module Waxt.Wasm
 
 open System.IO
 
+let writeHeader (writer: BinaryWriter) =
+    writer.Write [| 0x00uy
+                    0x61uy
+                    0x73uy
+                    0x6Duy |] // magic
+
+    writer.Write 1u // version
+
+let writeFunctionSection (writer: BinaryWriter) =
+    writer.Write 0x03uy // id
+
+    writer.Write [| 0x01uy |] // num bytes
+
+    writer.Write [| 0x00uy |] // num function signatures
+
 let () =
-    use file = File.Open("out.wasm", FileMode.OpenOrCreate)
+    use file = File.Open("out.wasm", FileMode.Create)
     use writer = new BinaryWriter(file)
-    writer.Write 0x00uy
-    writer.Write 0x61uy
-    writer.Write 0x73uy
-    writer.Write 0x6Duy
-    writer.Write 0x01uy
-    writer.Write 0x00uy
-    writer.Write 0x00uy
-    writer.Write 0x00uy
+    writeHeader writer
+    writeFunctionSection writer
