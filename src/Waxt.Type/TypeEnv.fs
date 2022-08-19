@@ -6,7 +6,7 @@ type TypeEnv = private TypeEnv of typeVars: list<string * Type>
 module TypeEnv =
     let empty = TypeEnv []
 
-    let ofList typeVars = TypeEnv typeVars
+    let ofSeq typeVars = TypeEnv(List.ofSeq typeVars)
 
     let add (name: string) (ty: Type) (TypeEnv typeEnv) = TypeEnv((name, ty) :: typeEnv)
 

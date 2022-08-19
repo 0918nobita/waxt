@@ -10,16 +10,15 @@ open Waxt.TypedAst
 open Waxt.UntypedAst
 
 [<Tests>]
-let getFuncSigsTest =
-    test "getFuncSigs" {
+let checkFuncSigsTest =
+    test "checkFuncSigs" {
         let range = Range.fromPos Pos.origin
-        let funcDef =
-            FuncDef(FuncName("foo", range), I32 None, [], [ I32Const(12, range) ])
+        let funcDef = FuncDef(FuncName("foo", range), I32 None, [], [ I32Const(12, range) ])
 
         let untypedFuncs =
-            Expect.wantOk (getFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
+            Expect.wantOk (checkFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
 
-        Expect.wantError (getFuncSigs [ funcDef; funcDef ]) "duplicate function definition"
+        Expect.wantError (checkFuncSigs [ funcDef; funcDef ]) "duplicate function definition"
         |> ignore
 
         typeFuncBodies untypedFuncs |> ignore
