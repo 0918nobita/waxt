@@ -24,3 +24,10 @@ let private addMsbFlags (bytes: list<byte>) : list<byte> =
             byte ||| 128uy)
 
 let unsignedLeb128 (x: uint32) : list<byte> = x |> splitPer7Bits |> addMsbFlags
+
+open System
+
+let private reinterpretIntAsUint32 (x: int) : uint32 =
+    x
+    |> BitConverter.GetBytes
+    |> Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian
