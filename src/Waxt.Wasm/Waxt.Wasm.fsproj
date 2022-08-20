@@ -11,6 +11,8 @@
     <Compile Include="Vector.fs" />
     <Compile Include="Section.fs" />
     <Compile Include="TypeIndex.fs" />
+    <Compile Include="Type.fs" />
+    <Compile Include="TypeSection.fs" />
     <Compile Include="FunctionSection.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

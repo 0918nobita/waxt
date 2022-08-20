@@ -15,5 +15,8 @@ let () =
     use writer = new BinaryWriter(file)
     writeHeader writer
 
-    let functionSection = FunctionSection.make (Vector.ofList [])
+    let typeSection = TypeSection(Vec [ FunctionType(Vec [ I32 ], I32) ])
+    writer.Write(Section.toBytes typeSection)
+
+    let functionSection = FunctionSection(Vec [])
     writer.Write(Section.toBytes functionSection)
