@@ -2,4 +2,4 @@ bin/
 obj/
 .paket/
 paket-files/
-*.wasm
+/*.wasm

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Leb128.fs" />
+    <Compile Include="Section.fs" />
+    <Compile Include="TypeIndex.fs" />
+    <Compile Include="FunctionSection.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
