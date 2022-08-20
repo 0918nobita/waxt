@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <Compile Include="Leb128.fs" />
+    <Compile Include="Serializable.fs" />
+    <Compile Include="Vector.fs" />
     <Compile Include="Section.fs" />
     <Compile Include="TypeIndex.fs" />
     <Compile Include="FunctionSection.fs" />
