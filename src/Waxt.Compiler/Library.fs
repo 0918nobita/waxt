@@ -35,7 +35,7 @@ let compile src : Result<TypedFuncs, list<CompileError>> =
         | [] -> ()
         | tok :: _ -> return! Error [ FromParser(ParseError("Syntax error", (tok :> ILocatable).Locate())) ]
 
-        let! a =
+        let! funcDefs =
             sExprs
             |> List.map (
                 ParseUntypedAst.parseStmt
@@ -47,7 +47,7 @@ let compile src : Result<TypedFuncs, list<CompileError>> =
                 |> List.map (fun (FuncDefStmt funcDef) -> funcDef))
 
         let! untypedFuncs =
-            checkFuncSigs a
+            checkFuncSigs funcDefs
             |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
 
         return!

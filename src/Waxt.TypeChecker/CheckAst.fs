@@ -36,7 +36,7 @@ let checkFuncParams parameters =
     }
 
 /// 各関数のシグネチャをチェックし IndexedMap として取得する
-let checkFuncSigs stmts =
+let checkFuncSigs funcDefs =
     let sigs = UntypedFuncs(100)
 
     let registerFuncSig (FuncDef (FuncName (name, at), resultType, parameters, body)) : Result<unit, TypeError> =
@@ -52,11 +52,21 @@ let checkFuncSigs stmts =
         }
 
     result {
-        do! stmts |> SeqExt.iterWhileOk registerFuncSig
+        do! funcDefs |> SeqExt.iterWhileOk registerFuncSig
         return sigs
     }
 
 type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
+
+let rec private checkProgn (expectedResultTy: Type) (exprTypes: list<Type>) : Result<unit, TypeError> =
+    match exprTypes with
+    | [] -> expectType expectedResultTy (Unit None)
+    | [ ty ] -> expectType expectedResultTy ty
+    | ty :: rest ->
+        result {
+            do! expectType (Unit None) ty
+            do! checkProgn expectedResultTy rest
+        }
 
 /// 各関数の本体を型付けする
 let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> =
@@ -66,7 +76,7 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
         do!
             untypedFuncs
             |> SeqExt.iterWhileOk (fun (funcName, (funcSig, body)) ->
-                let (FuncSig (parameters, _, _)) = funcSig
+                let (FuncSig (parameters, resultTy, _)) = funcSig
 
                 let typeEnv =
                     parameters
@@ -78,6 +88,8 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
                         body
                         |> List.map (checkType typeEnv)
                         |> List.sequenceResultM
+
+                    do! checkProgn resultTy (typedBody |> List.map TypedExpr.getType)
 
                     typedFuncs.Add(funcName, (funcSig, typedBody))
                 })
