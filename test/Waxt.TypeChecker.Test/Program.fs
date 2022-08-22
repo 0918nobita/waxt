@@ -13,7 +13,7 @@ open Waxt.UntypedAst
 let checkFuncSigsTest =
     test "checkFuncSigs" {
         let range = Range.fromPos Pos.origin
-        let funcDef = FuncDef(FuncName("foo", range), I32 None, [], [ I32Const(12, range) ])
+        let funcDef = FuncDef(FuncName("foo", range), I32, [], [ I32Const(12, range) ])
 
         let untypedFuncs =
             Expect.wantOk (checkFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
@@ -60,7 +60,10 @@ let varTest =
     testTask "var" {
         let result =
             Var("x", range)
-            |> typeCheckShouldSucceed (TypeEnv.empty |> TypeEnv.add "x" (I32 None))
+            |> typeCheckShouldSucceed (
+                TypeEnv.empty
+                |> TypeEnv.add "x" (I32, Range.fromPos Pos.origin)
+            )
 
         do! Verifier.Verify("var", result)
     }

@@ -26,7 +26,7 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
         result {
             let! parameters = parseFuncParams parameters
             let! body = parseManyExpr body
-            return FuncDefStmt(FuncDef(FuncName(name, nameRange), Unit None, parameters, body))
+            return FuncDefStmt(FuncDef(FuncName(name, nameRange), Unit, parameters, body))
         }
 
     | Atom _ :: sExpr :: _ ->

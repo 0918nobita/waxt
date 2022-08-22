@@ -25,7 +25,7 @@ let checkFuncParams parameters =
         result {
             do!
                 funcParams[paramName]
-                |> Result.requireNone (TypeError($"Duplicate parameter `%s{paramName}`", Some at))
+                |> Result.requireNone (TypeError($"Duplicate parameter `%s{paramName}`", at))
 
             funcParams.Add(paramName, (at, paramType))
         }
@@ -43,7 +43,7 @@ let checkFuncSigs funcDefs =
         result {
             do!
                 sigs[name]
-                |> Result.requireNone (TypeError($"Duplicate function name `%s{name}`", Some at))
+                |> Result.requireNone (TypeError($"Duplicate function name `%s{name}`", at))
 
             let! funcParams = checkFuncParams parameters
 
@@ -58,14 +58,18 @@ let checkFuncSigs funcDefs =
 
 type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
-let rec private checkProgn (expectedResultTy: Type) (exprTypes: list<Type>) : Result<unit, TypeError> =
+let rec private checkProgn
+    (funcNameRange: Range)
+    (expectedResultTy: Type)
+    (exprTypes: list<Range * Type>)
+    : Result<unit, TypeError> =
     match exprTypes with
-    | [] -> expectType expectedResultTy (Unit None)
-    | [ ty ] -> expectType expectedResultTy ty
-    | ty :: rest ->
+    | [] -> Error(TypeError("The result type is not unit, but no expression is found", funcNameRange))
+    | [ range, ty ] -> expectType expectedResultTy (ty, range)
+    | (range, ty) :: rest ->
         result {
-            do! expectType (Unit None) ty
-            do! checkProgn expectedResultTy rest
+            do! expectType Unit (ty, range)
+            do! checkProgn funcNameRange expectedResultTy rest
         }
 
 /// 各関数の本体を型付けする
@@ -76,11 +80,11 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
         do!
             untypedFuncs
             |> SeqExt.iterWhileOk (fun (funcName, (funcSig, body)) ->
-                let (FuncSig (parameters, resultTy, _)) = funcSig
+                let (FuncSig (parameters, resultTy, funcNameRange)) = funcSig
 
                 let typeEnv =
                     parameters
-                    |> Seq.map (fun (name, (_at, ty)) -> (name, ty))
+                    |> Seq.map (fun (name, (at, ty)) -> (name, (ty, at)))
                     |> TypeEnv.ofSeq
 
                 result {
@@ -89,7 +93,13 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
                         |> List.map (checkType typeEnv)
                         |> List.sequenceResultM
 
-                    do! checkProgn resultTy (typedBody |> List.map TypedExpr.getType)
+                    do!
+                        checkProgn
+                            funcNameRange
+                            resultTy
+                            (typedBody
+                             |> List.map (fun typedExpr ->
+                                 ((typedExpr :> ILocatable).Locate(), TypedExpr.getType typedExpr)))
 
                     typedFuncs.Add(funcName, (funcSig, typedBody))
                 })

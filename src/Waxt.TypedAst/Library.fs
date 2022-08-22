@@ -56,6 +56,6 @@ module TypedExpr =
         function
         | I32Add _
         | I32Const _
-        | I32Mul _ -> I32 None
-        | I32Store _ -> Unit None
+        | I32Mul _ -> I32
+        | I32Store _ -> Unit
         | Var (_, ty, _) -> ty
