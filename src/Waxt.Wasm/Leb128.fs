@@ -1,47 +1,51 @@
 module Waxt.Wasm.Leb128
 
-let private splitPer7Bits (x: uint32) : list<byte> =
-    if x = 0u then
-        [ 0uy ]
-    else
-        let rec inner (shift: int) =
-            match x >>> (7 * shift) with
-            | 0u -> []
-            | shifted ->
-                uint8 (shifted &&& ~~~ 128u)
-                :: (inner (shift + 1))
+open System
 
-        inner 0
+let private clearMsb (x: uint32) = x &&& 127u
 
-let private addMsbFlags (bytes: list<byte>) : list<byte> =
+let private addMsbFlags (bytes: list<uint8>) =
     let lastIndex = List.length bytes - 1
 
     bytes
-    |> List.mapi (fun i byte ->
-        if i = lastIndex then
-            byte
+    |> List.mapi (fun index part ->
+        if index = lastIndex then
+            part
         else
-            byte ||| 128uy)
+            part ||| 128uy)
 
-let unsignedLeb128 (x: uint32) : list<byte> = x |> splitPer7Bits |> addMsbFlags
+let unsignedLeb128 (x: uint32) : list<byte> =
+    let bytes =
+        (clearMsb x)
+        :: ([ x >>> 7
+              x >>> 14
+              x >>> 21
+              x >>> 28 ]
+            |> List.map clearMsb
+            |> List.takeWhile ((<>) 0u))
+        |> List.map uint8
 
-open System
+    addMsbFlags bytes
 
 let private reinterpretIntAsUint32 (x: int) : uint32 =
     x
     |> BitConverter.GetBytes
     |> Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian
 
-let singedLeb128 (x: int) =
+let signedLeb128 (x: int) : list<byte> =
     if x >= 0 then
         unsignedLeb128 (uint32 x)
     else
         let x = reinterpretIntAsUint32 x
 
-        // FIXME: フラグをつけるまえに 1 のみの 7 ビット列を捨てて、結果のバイト列をできる限り短くする
-        [ x &&& 127u ||| 128u
-          (x >>> 7) &&& 127u ||| 128u
-          (x >>> 14) &&& 127u ||| 128u
-          (x >>> 21) &&& 127u ||| 128u
-          (x >>> 28) &&& 127u ||| 112u ]
-        |> List.map uint8
+        let bytes =
+            (clearMsb x)
+            :: ([ x >>> 7
+                  x >>> 14
+                  x >>> 21
+                  x >>> 28 &&& 112u ]
+                |> List.map clearMsb
+                |> List.takeWhile ((<>) 127u))
+            |> List.map uint8
+
+        addMsbFlags bytes
