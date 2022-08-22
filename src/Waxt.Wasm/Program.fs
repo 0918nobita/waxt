@@ -18,5 +18,10 @@ let () =
     let typeSection = TypeSection(Vec [ FunctionType(Vec [ I32 ], I32) ])
     writer.Write(Section.toBytes typeSection)
 
-    let functionSection = FunctionSection(Vec [])
+    let functionSection = FunctionSection(Vec [ TypeIndex 0u ])
     writer.Write(Section.toBytes functionSection)
+
+    let codeSection =
+        CodeSection(Vec [ Code(Func(Vec [], Expr [ LocalGet 0u; I32Const 3; I32Add ])) ])
+
+    writer.Write(Section.toBytes codeSection)
