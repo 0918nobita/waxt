@@ -13,10 +13,12 @@ module Stmt =
         | FuncDefStmt (FuncDef (name, resultTy, parameters, body)) ->
             let parameters =
                 parameters
-                |> List.map (fun (name, at, ty) ->
+                |> List.map (fun ((name, nameRange), (ty, tyRange)) ->
                     Encode.object [ "name", Encode.string name
-                                    "at", Encode.string (Range.toString at)
-                                    "ty", Type.toJson ty ])
+                                    "range", Encode.string (Range.toString nameRange)
+                                    "type",
+                                    Encode.object [ "name", Type.toJson ty
+                                                    "range", Encode.string (Range.toString tyRange) ] ])
                 |> Encode.list
 
             let body = body |> List.map Expr.toJson |> Encode.list

@@ -4,7 +4,7 @@ open FsToolkit.ErrorHandling
 open Waxt.Location
 open Waxt.Type
 
-let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Range * Type>> =
+let rec parseFuncParams: list<SExpr> -> ParseResult<list<(string * Range) * (Type * Range)>> =
     function
     | [] -> Ok []
 
@@ -15,7 +15,7 @@ let rec parseFuncParams: list<SExpr> -> ParseResult<list<string * Range * Type>>
         result {
             let! ty = ParseType.parseType tyRange ty
             let! parameters = parseFuncParams rest
-            return (param, paramRange, ty) :: parameters
+            return ((param, paramRange), (ty, tyRange)) :: parameters
         }
 
     | Atom _ :: expr :: _ ->

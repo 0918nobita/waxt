@@ -62,7 +62,7 @@ let varTest =
             Var("x", range)
             |> typeCheckShouldSucceed (
                 TypeEnv.empty
-                |> TypeEnv.add "x" (I32, Range.fromPos Pos.origin)
+                |> TypeEnv.add ("x", Range.fromPos Pos.origin) (I32, Range.fromPos Pos.origin)
             )
 
         do! Verifier.Verify("var", result)
