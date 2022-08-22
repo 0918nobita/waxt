@@ -52,9 +52,9 @@ let lex (str: string) : Result<list<Token>, LexError> =
 
         | Some (start, str), [] -> Ok [ Str(str, Range.make start basePos) ]
 
-        | None, '\r' :: '\n' :: cs -> inner (Pos.nextLine basePos) None cs
+        | None, ('\n' :: cs | '\r' :: '\n' :: cs) -> inner (Pos.nextLine basePos) None cs
 
-        | Some (start, str), '\r' :: '\n' :: cs ->
+        | Some (start, str), ('\n' :: cs | '\r' :: '\n' :: cs) ->
             result {
                 let! tokens = inner (Pos.nextLine basePos) None cs
 
