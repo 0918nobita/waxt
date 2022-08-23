@@ -12,7 +12,10 @@ let rec private checkProgn
     (exprTypes: list<Type * Range>)
     : Result<unit, TypeError> =
     match exprTypes with
-    | [] -> Error(TypeError("The result type is not unit, but no expression is found", funcNameRange))
+    | [] ->
+        if expectedResultTy = Unit
+        then Ok ()
+        else Error(TypeError("The result type is not unit, but no expression is found", funcNameRange))
     | [ ty, range ] -> expectType expectedResultTy (ty, range)
     | (ty, range) :: rest ->
         result {
