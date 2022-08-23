@@ -87,7 +87,7 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
                 let typeEnv =
                     parameters
                     |> Seq.map (fun (name, (nameRange, (ty, tyRange))) -> ((name, nameRange), (ty, tyRange)))
-                    |> TypeEnv.ofSeq
+                    |> Seq.fold (fun state (name, ty) -> TypeEnv.add name ty state) TypeEnv.empty
 
                 result {
                     let! typedBody =

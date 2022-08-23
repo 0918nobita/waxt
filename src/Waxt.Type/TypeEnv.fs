@@ -8,8 +8,6 @@ type TypeEnv = private TypeEnv of typeVars: list<(string * Range) * (Type * Rang
 module TypeEnv =
     let empty = TypeEnv []
 
-    let ofSeq typeVars = TypeEnv(List.ofSeq typeVars)
-
     let add (name: string * Range) (ty: Type * Range) (TypeEnv typeEnv) = TypeEnv((name, ty) :: typeEnv)
 
     let find (name: string) (TypeEnv typeEnv) =
