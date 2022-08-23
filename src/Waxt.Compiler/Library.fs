@@ -15,6 +15,7 @@ type CompileError =
     | FromLexer of LexError
     | FromParser of ParseError
     | FromTypeChecker of TypeError
+    | FromCodeGen of CodeGenError
 
 module CompileError =
     let toString =
@@ -22,6 +23,7 @@ module CompileError =
         | FromLexer lexError -> LexError.toString lexError
         | FromParser parseError -> ParseError.toString parseError
         | FromTypeChecker typeError -> TypeError.toString typeError
+        | FromCodeGen codeGenError -> CodeGenError.toString codeGenError
 
 let compile src : Result<list<byte>, list<CompileError>> =
     result {
@@ -53,7 +55,9 @@ let compile src : Result<list<byte>, list<CompileError>> =
             typeFuncDefs funcDefs
             |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
 
-        let wasm = genCode typedFuncs
+        let! wasm =
+            genCode typedFuncs
+            |> Result.mapError (List.map FromCodeGen)
 
         return Wasm.toBytes wasm
     }

@@ -12,7 +12,9 @@ module Wasm =
         let typeSection = Section.toBytes typeSection
         let functionSection = Section.toBytes functionSection
         let codeSection = Section.toBytes codeSection
+        let memorySection = Section.toBytes (MemorySection(Vec [ MemType 1u ]))
 
         magic
         @ version
-          @ typeSection @ functionSection @ codeSection
+          @ typeSection
+            @ functionSection @ memorySection @ codeSection

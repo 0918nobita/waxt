@@ -7,13 +7,13 @@ open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
-let rec checkType (typeEnv: TypeEnv) : Expr -> Result<TypedExpr, TypeError> =
+let rec typeExpr (typeEnv: TypeEnv) : Expr -> Result<TypedExpr, TypeError> =
     function
     | I32Add (lhs, rhs, at) ->
         result {
-            let! lhs = checkType typeEnv lhs
+            let! lhs = typeExpr typeEnv lhs
             do! expectType I32 (TypedExpr.getType lhs, (lhs :> ILocatable).Locate())
-            let! rhs = checkType typeEnv rhs
+            let! rhs = typeExpr typeEnv rhs
             do! expectType I32 (TypedExpr.getType rhs, (rhs :> ILocatable).Locate())
             return TypedExpr.I32Add(lhs, rhs, at)
         }
@@ -22,18 +22,18 @@ let rec checkType (typeEnv: TypeEnv) : Expr -> Result<TypedExpr, TypeError> =
 
     | I32Mul (lhs, rhs, at) ->
         result {
-            let! lhs = checkType typeEnv lhs
+            let! lhs = typeExpr typeEnv lhs
             do! expectType I32 (TypedExpr.getType lhs, (lhs :> ILocatable).Locate())
-            let! rhs = checkType typeEnv rhs
+            let! rhs = typeExpr typeEnv rhs
             do! expectType I32 (TypedExpr.getType rhs, (rhs :> ILocatable).Locate())
             return TypedExpr.I32Mul(lhs, rhs, at)
         }
 
     | I32Store (addr, content, at) ->
         result {
-            let! addr = checkType typeEnv addr
+            let! addr = typeExpr typeEnv addr
             do! expectType I32 (TypedExpr.getType addr, (addr :> ILocatable).Locate())
-            let! content = checkType typeEnv content
+            let! content = typeExpr typeEnv content
             do! expectType I32 (TypedExpr.getType content, (content :> ILocatable).Locate())
             return TypedExpr.I32Store(addr, content, at)
         }

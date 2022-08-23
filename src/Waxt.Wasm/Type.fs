@@ -16,11 +16,11 @@ type NumberType =
             | F64 -> [ 0x7Cuy ]
 
 type FunctionType =
-    | FunctionType of parameter: Vector<NumberType> * result: NumberType
+    | FunctionType of parameter: Vector<NumberType> * result: Vector<NumberType>
 
     interface ISerializable with
         member this.Serialize() =
             match this with
             | FunctionType (parameter, result) ->
                 0x60uy :: (parameter :> ISerializable).Serialize()
-                @ (Vec [ result ] :> ISerializable).Serialize()
+                @ (result :> ISerializable).Serialize()

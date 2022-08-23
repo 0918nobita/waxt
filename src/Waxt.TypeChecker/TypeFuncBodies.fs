@@ -38,7 +38,7 @@ let typeFuncBodies (untypedFuncs: UntypedFuncs) : Result<TypedFuncs, TypeError> 
                 result {
                     let! typedBody =
                         body
-                        |> List.map (checkType typeEnv)
+                        |> List.map (typeExpr typeEnv)
                         |> List.sequenceResultM
 
                     do!

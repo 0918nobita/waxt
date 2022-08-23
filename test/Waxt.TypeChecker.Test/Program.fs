@@ -15,18 +15,16 @@ let checkFuncSigsTest =
         let range = Range.fromPos Pos.origin
         let funcDef = FuncDef(FuncName("foo", range), I32, [], [ I32Const(12, range) ])
 
-        let untypedFuncs =
-            Expect.wantOk (checkFuncSigs [ funcDef ]) "compile untyped statements to function signatures"
-
-        Expect.wantError (checkFuncSigs [ funcDef; funcDef ]) "duplicate function definition"
+        Expect.wantOk (typeFuncDefs [ funcDef ]) "compile untyped statements to function signatures"
         |> ignore
 
-        typeFuncBodies untypedFuncs |> ignore
+        Expect.wantError (typeFuncDefs [ funcDef; funcDef ]) "duplicate function definition"
+        |> ignore
     }
 
 let typeCheckShouldSucceed (typeEnv: TypeEnv) (expr: Expr) =
     expr
-    |> checkType typeEnv
+    |> typeExpr typeEnv
     |> (fun result -> Expect.wantOk result "The type check should succeed")
     |> TypedExpr.toJson
     |> Encode.toString 2
@@ -48,7 +46,7 @@ let undefinedVarTest =
     testTask "undefinedVar" {
         let errorMsg =
             Var("x", range)
-            |> checkType TypeEnv.empty
+            |> typeExpr TypeEnv.empty
             |> (fun result -> Expect.wantError result "The type check should fail")
             |> TypeError.toString
 

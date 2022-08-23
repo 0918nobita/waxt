@@ -14,6 +14,7 @@
     <Compile Include="TypeSection.fs" />
     <Compile Include="FunctionSection.fs" />
     <Compile Include="CodeSection.fs" />
+    <Compile Include="MemorySection.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

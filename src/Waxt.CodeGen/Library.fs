@@ -1,40 +1,64 @@
 [<AutoOpen>]
 module Waxt.CodeGen.Library
 
+open FsToolkit.ErrorHandling
+open Waxt.Location
 open Waxt.Wasm
 
 module WaxtType = Waxt.Type.Type
 
 module TypedAst = Waxt.TypedAst.Library
 
-let private waxtTypeToWasmType (waxtType: WaxtType.Type) =
+type CodeGenError = CodeGenError of msg: string * at: Range
+
+module CodeGenError =
+    let toString (CodeGenError (msg, at)) =
+        let at = Range.toString at
+        $"(%s{at}) %s{msg}"
+
+let private waxtTypeToWasmResultType (waxtType: WaxtType.Type) : Vector<NumberType> =
     match waxtType with
-    | WaxtType.I32 -> I32
-    | WaxtType.I64 -> I64
-    | _ -> failwith "Not implemented"
+    | WaxtType.I32 -> [ I32 ]
+    | WaxtType.I64 -> [ I64 ]
+    | WaxtType.Unit -> []
+    |> Vec
 
-let private funcSigToFuncType (TypedAst.FuncSig (parameters, result, _)) : FunctionType =
-    let parameters =
-        parameters
-        |> Seq.map (fun (_, (_, (ty, _))) -> waxtTypeToWasmType ty)
-        |> List.ofSeq
+let private funcSigToFuncType (TypedAst.FuncSig (parameters, resultTy, _)) : Result<FunctionType, list<CodeGenError>> =
+    result {
+        let! parameters =
+            parameters
+            |> List.ofSeq
+            |> List.map (fun (_, (_, (ty, at))) ->
+                match ty with
+                | WaxtType.I32 -> Ok I32
+                | WaxtType.I64 -> Ok I64
+                | WaxtType.Unit -> Error(CodeGenError("unit cannot be used as a parameter type", at)))
+            |> List.sequenceResultA
 
-    let result = waxtTypeToWasmType result
-    FunctionType(Vec parameters, result)
+        let result = waxtTypeToWasmResultType resultTy
+        return FunctionType(Vec parameters, result)
+    }
 
 let rec private genInsts (typedExpr: TypedAst.TypedExpr) : list<Inst> =
     match typedExpr with
     | TypedAst.I32Const (n, _) -> [ I32Const n ]
+
     | TypedAst.I32Add (lhs, rhs, _) ->
         let lhs = genInsts lhs
         let rhs = genInsts rhs
         lhs @ rhs @ [ I32Add ]
+
     | TypedAst.I32Mul (lhs, rhs, _) ->
         let lhs = genInsts lhs
         let rhs = genInsts rhs
         lhs @ rhs @ [ I32Mul ]
+
     | TypedAst.Var (index, _, _) -> [ LocalGet(uint32 index) ]
-    | _ -> failwith "Not implemented"
+
+    | TypedAst.I32Store (addr, content, _) ->
+        let addr = genInsts addr
+        let content = genInsts content
+        addr @ content @ [ I32Store ]
 
 type FuncTyPool = list<FunctionType>
 
@@ -42,28 +66,33 @@ type CompiledFunc = TypeIndex * Code
 
 type State = FuncTyPool * list<CompiledFunc>
 
-let genCode (funcs: TypedAst.TypedFuncs) : Wasm =
-    let (funcTyPool, compiledFuncs) =
-        (([], []: State), funcs)
-        ||> Seq.fold (fun (funcTyPool, compiledFuncs) (_, (funcSig, funcBody)) ->
-            let funcType = funcSigToFuncType funcSig
+let genCode (funcs: TypedAst.TypedFuncs) : Result<Wasm, list<CodeGenError>> =
+    result {
+        let! (funcTyPool, compiledFuncs) =
+            (Ok([], []: State), funcs)
+            ||> Seq.fold (fun state (_, (funcSig, funcBody)) ->
+                result {
+                    let! (funcTyPool, compiledFuncs) = state
+                    let! funcType = funcSigToFuncType funcSig
 
-            let (funcTyPool, index) =
-                List.tryFindIndex ((=) funcType) funcTyPool
-                |> Option.map (fun index -> (funcTyPool, index))
-                |> Option.defaultWith (fun () -> (funcTyPool @ [ funcType ], List.length funcTyPool))
+                    let (funcTyPool, index) =
+                        List.tryFindIndex ((=) funcType) funcTyPool
+                        |> Option.map (fun index -> (funcTyPool, index))
+                        |> Option.defaultWith (fun () -> (funcTyPool @ [ funcType ], List.length funcTyPool))
 
-            let insts = funcBody |> List.map genInsts |> List.concat
+                    let insts = funcBody |> List.map genInsts |> List.concat
 
-            let compiledFunc = (TypeIndex(uint32 index), Code(Func(Vec [], Expr insts)))
-            (funcTyPool, compiledFunc :: compiledFuncs))
+                    let compiledFunc = (TypeIndex(uint32 index), Code(Func(Vec [], Expr insts)))
+                    return (funcTyPool, compiledFunc :: compiledFuncs)
+                })
 
-    let compiledFuncs = List.rev compiledFuncs
+        let compiledFuncs = List.rev compiledFuncs
 
-    let typeSection = TypeSection(Vec funcTyPool)
+        let typeSection = TypeSection(Vec funcTyPool)
 
-    let functionSection = FunctionSection(Vec(compiledFuncs |> List.map fst))
+        let functionSection = FunctionSection(Vec(compiledFuncs |> List.map fst))
 
-    let codeSection = CodeSection(Vec(compiledFuncs |> List.map snd))
+        let codeSection = CodeSection(Vec(compiledFuncs |> List.map snd))
 
-    Wasm(typeSection, functionSection, codeSection)
+        return Wasm(typeSection, functionSection, codeSection)
+    }
