@@ -8,7 +8,7 @@ type ISection =
     abstract member GetContents: unit -> list<byte>
 
 module Section =
-    let toBytes (section: ISection) =
+    let toBytes (section: ISection) : list<byte> =
         let contents = section.GetContents()
 
         let len =
@@ -17,4 +17,4 @@ module Section =
             |> uint32
             |> unsignedLeb128
 
-        section.Id :: len @ contents |> Array.ofList
+        section.Id :: len @ contents
