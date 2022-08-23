@@ -48,11 +48,7 @@ let compile src : Result<TypedFuncs, list<CompileError>> =
             stmts
             |> List.map (fun (FuncDefStmt funcDef) -> funcDef)
 
-        let! untypedFuncs =
-            checkFuncSigs funcDefs
-            |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
-
         return!
-            typeFuncBodies untypedFuncs
+            typeFuncDefs funcDefs
             |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
     }

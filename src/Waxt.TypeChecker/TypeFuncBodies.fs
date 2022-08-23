@@ -1,58 +1,10 @@
 [<AutoOpen>]
-module Waxt.TypeChecker.CheckAst
+module Waxt.TypeChecker.TypeFuncBodies
 
 open FsToolkit.ErrorHandling
 open Waxt.Location
 open Waxt.Type
 open Waxt.TypedAst
-open Waxt.UntypedAst
-
-module SeqExt =
-    let iterWhileOk (f: 't -> Result<unit, 'e>) (sequence: seq<'t>) : Result<unit, 'e> =
-        let folder (state: Result<unit, 'e>) (item: 't) = state |> Result.bind (fun () -> f item)
-
-        sequence |> Seq.fold folder (Ok())
-
-/// 関数の仮引数リストをチェックし IndexedMap として取得する
-let checkFuncParams parameters : Result<FuncParams, TypeError> =
-    let funcParams = FuncParams(10)
-
-    let registerFuncParam ((paramName, paramNameRange), (paramType, paramTypeRange)) : Result<unit, TypeError> =
-        result {
-            do!
-                funcParams[paramName]
-                |> Result.requireNone (TypeError($"Duplicate parameter `%s{paramName}`", paramNameRange))
-
-            funcParams.Add(paramName, (paramNameRange, (paramType, paramTypeRange)))
-        }
-
-    result {
-        do! parameters |> SeqExt.iterWhileOk registerFuncParam
-        return funcParams
-    }
-
-type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
-
-/// 各関数のシグネチャをチェックし IndexedMap として取得する
-let checkFuncSigs funcDefs : Result<UntypedFuncs, TypeError> =
-    let sigs = UntypedFuncs(100)
-
-    let registerFuncSig (FuncDef (FuncName (name, at), resultType, parameters, body)) : Result<unit, TypeError> =
-        result {
-            do!
-                sigs[name]
-                |> Result.requireNone (TypeError($"Duplicate function name `%s{name}`", at))
-
-            let! funcParams = checkFuncParams parameters
-
-            let funcSig = FuncSig(funcParams, resultType, at)
-            sigs.Add(name, (funcSig, body))
-        }
-
-    result {
-        do! funcDefs |> SeqExt.iterWhileOk registerFuncSig
-        return sigs
-    }
 
 let rec private checkProgn
     (funcNameRange: Range)

@@ -1,5 +1,5 @@
 [<AutoOpen>]
-module Waxt.TypeChecker.CheckExpr
+module Waxt.TypeChecker.TypeExpr
 
 open FsToolkit.ErrorHandling
 open Waxt.Location
