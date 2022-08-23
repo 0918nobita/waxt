@@ -1,0 +1,3 @@
+(func noop1 unit [])
+
+(func noop2 [])
