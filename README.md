@@ -97,10 +97,13 @@ graph TB
   TypeChecker-->Type
   TypeChecker-->TypedAst
   TypeChecker-->UntypedAst
+  CodeGen-->TypedAst
+  CodeGen-->Wasm
   Compiler-->Lexer
   Compiler-->Location
   Compiler-->Parser
   Compiler-->TypeChecker
   Compiler-->TypedAst
+  Compiler-->CodeGen
   Cli-->Compiler
 ```
