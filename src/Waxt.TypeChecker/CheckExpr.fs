@@ -40,9 +40,9 @@ let rec checkType (typeEnv: TypeEnv) : Expr -> Result<TypedExpr, TypeError> =
 
     | Var (name, at) ->
         result {
-            let! (ty, _) =
+            let! (index, (ty, _)) =
                 TypeEnv.find name typeEnv
                 |> Result.requireSome (TypeError($"{name} is not defined", at))
 
-            return TypedExpr.Var(name, ty, at)
+            return TypedExpr.Var(index, ty, at)
         }

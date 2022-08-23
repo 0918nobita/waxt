@@ -9,7 +9,7 @@ type TypedExpr =
     | I32Const of value: int * at: Range
     | I32Mul of lhs: TypedExpr * rhs: TypedExpr * at: Range
     | I32Store of addr: TypedExpr * content: TypedExpr * at: Range
-    | Var of name: string * ty: Type * at: Range
+    | Var of index: int * ty: Type * at: Range
 
     interface ILocatable with
         member this.Locate() =
@@ -46,9 +46,9 @@ module TypedExpr =
                             "content", toJson content
                             "at", Encode.string (Range.toString at) ]
 
-        | Var (name, ty, at) ->
+        | Var (index, ty, at) ->
             Encode.object [ "type", Encode.string "Var"
-                            "name", Encode.string name
+                            "index", Encode.int index
                             "ty", Type.toJson ty
                             "at", Encode.string (Range.toString at) ]
 
