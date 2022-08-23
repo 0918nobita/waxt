@@ -16,6 +16,7 @@ type Locals =
 type Inst =
     | I32Const of n: int
     | I32Add
+    | I32Mul
     | LocalGet of index: uint32
 
 module Inst =
@@ -23,6 +24,7 @@ module Inst =
         match inst with
         | I32Const n -> 0x41uy :: signedLeb128 n
         | I32Add -> [ 0x6Auy ]
+        | I32Mul -> [ 0x6Cuy ]
         | LocalGet index -> 0x20uy :: unsignedLeb128 index
 
 type Expr = Expr of insts: list<Inst>

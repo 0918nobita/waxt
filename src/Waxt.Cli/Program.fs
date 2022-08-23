@@ -35,8 +35,10 @@ let main args =
                 exit 1
 
         match compile src with
-        | Ok stmts ->
-            printfn "%A" stmts
+        | Ok bytes ->
+            use file = File.Open("out.wasm", FileMode.Create)
+            use writer = new BinaryWriter(file)
+            writer.Write(Array.ofList bytes)
             0
 
         | Error compileErrors ->

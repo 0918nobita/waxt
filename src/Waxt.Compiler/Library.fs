@@ -2,12 +2,13 @@
 module Waxt.Compiler.Library
 
 open FsToolkit.ErrorHandling
+open Waxt.CodeGen
 open Waxt.Lexer
 open Waxt.Location
 open Waxt.Parser
 open Waxt.TypeChecker
-open Waxt.TypedAst
 open Waxt.UntypedAst
+open Waxt.Wasm
 
 type CompileError =
     private
@@ -22,7 +23,7 @@ module CompileError =
         | FromParser parseError -> ParseError.toString parseError
         | FromTypeChecker typeError -> TypeError.toString typeError
 
-let compile src : Result<TypedFuncs, list<CompileError>> =
+let compile src : Result<list<byte>, list<CompileError>> =
     result {
         let! tokens =
             lex src
@@ -48,7 +49,11 @@ let compile src : Result<TypedFuncs, list<CompileError>> =
             stmts
             |> List.map (fun (FuncDefStmt funcDef) -> funcDef)
 
-        return!
+        let! typedFuncs =
             typeFuncDefs funcDefs
             |> Result.mapError (fun typeError -> [ FromTypeChecker typeError ])
+
+        let wasm = genCode typedFuncs
+
+        return Wasm.toBytes wasm
     }

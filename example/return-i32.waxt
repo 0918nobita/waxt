@@ -1,2 +1,5 @@
 (func foo i32 [x i32 y i32]
     (i32.mul (i32.add x 3) y))
+
+(func bar i32 [x i32]
+    (i32.add x 4))
