@@ -1,4 +1,5 @@
-namespace Waxt.TypedAst
+[<AutoOpen>]
+module Waxt.TypedAst.Library
 
 open Thoth.Json.Net
 open Waxt.Location
@@ -59,3 +60,9 @@ module TypedExpr =
         | I32Mul _ -> I32
         | I32Store _ -> Unit
         | Var (_, ty, _) -> ty
+
+type FuncParams = IndexedMap<string, Range * (Type * Range)>
+
+type FuncSig = FuncSig of parameters: FuncParams * result: Type * at: Range
+
+type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>

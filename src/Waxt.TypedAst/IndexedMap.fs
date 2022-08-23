@@ -1,5 +1,5 @@
 [<AutoOpen>]
-module Waxt.TypeChecker.IndexedMap
+module Waxt.TypedAst.IndexedMap
 
 open System
 open System.Collections.Generic

@@ -13,12 +13,6 @@ module SeqExt =
 
         sequence |> Seq.fold folder (Ok())
 
-type FuncParams = IndexedMap<string, Range * (Type * Range)>
-
-type FuncSig = FuncSig of parameters: FuncParams * result: Type * at: Range
-
-type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
-
 /// 関数の仮引数リストをチェックし IndexedMap として取得する
 let checkFuncParams parameters : Result<FuncParams, TypeError> =
     let funcParams = FuncParams(10)
@@ -36,6 +30,8 @@ let checkFuncParams parameters : Result<FuncParams, TypeError> =
         do! parameters |> SeqExt.iterWhileOk registerFuncParam
         return funcParams
     }
+
+type UntypedFuncs = IndexedMap<string, FuncSig * list<Expr>>
 
 /// 各関数のシグネチャをチェックし IndexedMap として取得する
 let checkFuncSigs funcDefs : Result<UntypedFuncs, TypeError> =
@@ -57,8 +53,6 @@ let checkFuncSigs funcDefs : Result<UntypedFuncs, TypeError> =
         do! funcDefs |> SeqExt.iterWhileOk registerFuncSig
         return sigs
     }
-
-type TypedFuncs = IndexedMap<string, FuncSig * list<TypedExpr>>
 
 let rec private checkProgn
     (funcNameRange: Range)

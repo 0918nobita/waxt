@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="IndexedMap.fs" />
     <Compile Include="Error.fs" />
     <Compile Include="Expect.fs" />
     <Compile Include="CheckExpr.fs" />

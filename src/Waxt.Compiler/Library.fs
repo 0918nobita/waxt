@@ -6,6 +6,7 @@ open Waxt.Lexer
 open Waxt.Location
 open Waxt.Parser
 open Waxt.TypeChecker
+open Waxt.TypedAst
 open Waxt.UntypedAst
 
 type CompileError =

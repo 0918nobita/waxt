@@ -2,6 +2,7 @@ module Waxt.TypeChecker.Test.IndexedMap
 
 open Expecto
 open Waxt.TypeChecker
+open Waxt.TypedAst
 
 [<Tests>]
 let indexedMapTest =
