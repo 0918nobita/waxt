@@ -69,7 +69,7 @@ dotnet run --project src/Waxt.Cli -- example/add-and-store.waxt
 ## テストの実行方法
 
 ```bash
-./test.sh
+dotnet test
 ```
 
 ## プロジェクトの依存関係

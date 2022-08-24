@@ -2,16 +2,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="IndexedMap.fs" />
-    <Compile Include="Library.fs" />
+    <Compile Include="UnitTest1.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Waxt.Location\Waxt.Location.fsproj" />
-    <ProjectReference Include="..\Waxt.Type\Waxt.Type.fsproj" />
+    <ProjectReference Include="..\..\src\Wasm\Wasm.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

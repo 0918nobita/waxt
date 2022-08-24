@@ -13,6 +13,12 @@
       "commands": [
         "paket"
       ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.1.9",
+      "commands": [
+        "reportgenerator"
+      ]
     }
   }
 }
