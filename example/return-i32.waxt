@@ -3,3 +3,6 @@
 
 (func bar i32 [x i32]
     (i32.add x 4))
+
+(func baz i32 [x i32 y i32]
+    (i32.add x (i32.mul y 5)))
