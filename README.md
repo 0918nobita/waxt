@@ -4,15 +4,21 @@ WAT (WebAssembly Text Format) を少し拡張して、人間にとって書き�
 
 WAT と同じく S 式で記述し、コンパイラを用いて WASM (バイナリ形式) に変換したうえで、各種 WASM ランタイムで実行できます。
 
-## 言語機能
+## 開発状況
+
+``i32.add``, `i32.mul`, ``i32.store`` を用いた単純な関数定義をコンパイルできるようにしました。
+
+これから `let`, `set!` 特殊形式と型推論を実装しようとしています。
+
+## 実装したい言語機能
 
 ### トップレベルでの関数定義
 
 WAXT :
 
-```clojure
-(func add-and-store [addr *i32 x i32 y i32]
-    (store addr (+ x y)))
+```wasm
+(func add-and-store ([addr : i32] [x : i32] [y : i32])
+    (i32.store addr (+ x y)))
 ```
 
 WAT (コンパイル後) :
@@ -31,8 +37,8 @@ WAT (コンパイル後) :
 
 デフォルトですべての引数・束縛はイミュータブルであり、再代入はコンパイルエラーとなります。
 
-```clojure
-(func foo i32 [x i32 y i32]
+```wasm
+(func foo i32 ([x : i32] [y : i32])
     (let [x' (+ x 2) y' (+ y 3)]
         (* x' y')))
 ```
@@ -41,36 +47,23 @@ WAT (コンパイル後) :
 
 `$` プレフィックス付きの引数・束縛はミュータブルとなり、 `set!` 特殊形式による再代入が許可されます。
 
-```clojure
-(func bar i32 [$x i32 $y i32]
+```wasm
+(func bar i32 ([$x : i32] [$y : i32])
     (set! $x (+ $x 2))
     (set! $y (+ $y 3))
     (* $x $y))
 ```
 
-## 実装状況
+## コード例の実行方法
 
-- [x] レキサ
-- [x] S式パーサ
-- [ ] プリミティブ型 ( `i32` , `i64`, `f32` , `f64` )
-- [ ] ポインタ型 ( `*i32` 等)
-- [ ] リテラル
-- [ ] トップレベルでの関数定義
-- [ ] WAT の各命令と対応する組み込み関数 ( `i32.add` , `i32.store` 等)
-- [ ] 実引数の型に応じてコンパイル時に命令を決定するジェネリックな演算 / メモリ操作関数
-- [ ] ローカル定数 / 変数 ( `let` 特殊形式)
-- [ ] ローカル変数への代入 ( `set!` 特殊形式)
-- [ ] `progn` 特殊形式
-- [ ] `if` 特殊形式
-- [ ] `cond` 特殊形式
-- [ ] `do` 特殊形式
-- [ ] `while` 特殊形式
-- [ ] スレッディングマクロ
-
-## CLI の起動方法
+`example` ディレクトリ内にコード例があり、それらは以下のコマンドでコンパイルできます。
 
 ```bash
+dotnet run --project src/Waxt.Cli -- example/noop.waxt
+
 dotnet run --project src/Waxt.Cli -- example/return-i32.waxt
+
+dotnet run --project src/Waxt.Cli -- example/add-and-store.waxt
 ```
 
 ## テストの実行方法
