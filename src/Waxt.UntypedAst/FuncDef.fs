@@ -8,5 +8,5 @@ type FuncDef =
     | FuncDef of
         name: FuncName *
         resultTy: Type *
-        parameters: list<(string * Range) * (Type * Range)> *
+        parameters: list<(string * Range) * option<Type * Range>> *
         body: list<Expr>

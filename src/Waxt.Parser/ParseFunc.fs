@@ -14,7 +14,7 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
 
     | [ Atom (_, range) ] -> Error(ParseError("Expected type name or parameters", Range.fromPos (Range.``end`` range)))
 
-    | Atom (name, nameRange) :: Atom (resultTy, resultTyRange) :: BracketList (parameters, _) :: body ->
+    | Atom (name, nameRange) :: Atom (resultTy, resultTyRange) :: ParenList (parameters, _) :: body ->
         result {
             let! resultTy = ParseType.parseType resultTyRange resultTy
             let! parameters = parseFuncParams parameters
@@ -22,7 +22,7 @@ let parseFunc (basePos: Pos) : list<SExpr> -> ParseResult<Stmt> =
             return FuncDefStmt(FuncDef(FuncName(name, nameRange), resultTy, parameters, body))
         }
 
-    | Atom (name, nameRange) :: BracketList (parameters, _) :: body ->
+    | Atom (name, nameRange) :: ParenList (parameters, _) :: body ->
         result {
             let! parameters = parseFuncParams parameters
             let! body = parseManyExpr body

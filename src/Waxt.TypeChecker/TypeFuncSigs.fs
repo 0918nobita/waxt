@@ -2,15 +2,21 @@
 module Waxt.TypeChecker.TypeFuncSigs
 
 open FsToolkit.ErrorHandling
+open Waxt.Location
+open Waxt.Type
 open Waxt.TypedAst
 open Waxt.UntypedAst
 
 /// 関数の仮引数リストをチェックし IndexedMap として取得する
-let typeFuncParams parameters : Result<FuncParams, TypeError> =
+let typeFuncParams (parameters: seq<(string * Range) * option<Type * Range>>) : Result<FuncParams, TypeError> =
     let funcParams = FuncParams(10)
 
-    let registerFuncParam ((paramName, paramNameRange), (paramType, paramTypeRange)) : Result<unit, TypeError> =
+    let registerFuncParam ((paramName, paramNameRange), tyOpt) : Result<unit, TypeError> =
         result {
+            let! (paramType, paramTypeRange) =
+                tyOpt
+                |> Result.requireSome (TypeError("Type inference is not currently available", paramNameRange))
+
             do!
                 funcParams[paramName]
                 |> Result.requireNone (TypeError($"Duplicate parameter `%s{paramName}`", paramNameRange))
