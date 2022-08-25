@@ -1,5 +1,6 @@
 coverlet.collector
 FSharp.Core
+FsUnit
 Microsoft.NET.Test.Sdk
 NUnit
 NUnit3TestAdapter
