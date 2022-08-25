@@ -24,6 +24,15 @@ Extract(Γ, (let [x e1] e2)) =
     let (E2, τ2) = Extract((Γ, x:τ1), e2) in
     let E3 = E1 ∪ E2 in
     (E3, τ2)
+
+Extract(Γ, (e0 e1 ... en)) =
+    let (E0, τ0) = Extract(Γ, e0) in
+    let (E1, τ1) = Extract(Γ, e1) in
+    ...
+    let (En, τn) = Extract(Γ, en) in
+    let α be a fresh type variable in
+    let E = E0 ∪ E1 ∪ ... ∪ En ∪ { τ0 = (τ1, ..., τn) => α } in
+    (E, α)
 ```
 
 ↑で得られた型の連立方程式の解を求めるための、一階の単一化アルゴリズム Unify は以下のように表されます。
@@ -39,6 +48,9 @@ Unify(E ⨄ { α = τ } | E ⨄ { τ = α }) (when τ ≠ α) =
     else
         let S = Unify([τ/α]E) in
         S ○ [τ/α]
+
+Unify(E ⨄ { (τ11, ..., τ1n) => τ10 = (τ21, ..., τ2n) => τ20 }) =
+    Unify(E ⨄ { τ10 = τ20, τ11 = τ21, ..., τ1n = τ2n })
 
 Unify(E ⨄ { τ1 = τ2 }) = error
 ```
