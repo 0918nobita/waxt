@@ -9,7 +9,12 @@ Extract(Γ, i) = (∅, i32)
 
 Extract(Γ, x) = (∅, Γ(x))
 
-Extract(Γ, (i32.add e1 e2) | (i32.mul e1 e2) | (i32.store e1 e2)) =
+Extract(Γ, (i32.eqz e)) =
+    let (E0, τ) = Extract(Γ, e) in
+    let E = E0 ∪ { τ = i32 } in
+    (E, i32)
+
+Extract(Γ, (i32.add e1 e2) | (i32.sub e1 e2) | (i32.mul e1 e2) | (i32.store e1 e2)) =
     let (E1, τ1) = Extract(Γ, e1) in
     let (E2, τ2) = Extract(Γ, e2) in
     let E3 = E1 ∪ E2 ∪ { τ1 = i32, τ2 = i32 } in
@@ -27,14 +32,22 @@ Extract(Γ, (let [x e1] e2)) =
     let E3 = E1 ∪ E2 in
     (E3, τ2)
 
-Extract(Γ, (e0 e1 ... en)) =
-    let (E0, τ0) = Extract(Γ, e0) in
+Extract(Γ, (f e1 ... en)) =
+    if let ((τ1, ..., τn) => τ0) = Γ(f)
+    then
+        let (E1, τ1) = Extract(Γ, e1) in
+        ...
+        let (En, τn) = Extract(Γ, en) in
+        let E = E1 ∪ ... ∪ En in
+        (E, τ0)
+    else error
+
+Extract(Γ, (if e1 e2 e3)) =
     let (E1, τ1) = Extract(Γ, e1) in
-    ...
-    let (En, τn) = Extract(Γ, en) in
-    let α be a fresh type variable in
-    let E = E0 ∪ E1 ∪ ... ∪ En ∪ { τ0 = (τ1, ..., τn) => α } in
-    (E, α)
+    let (E2, τ2) = Extract(Γ, e2) in
+    let (E3, τ3) = Extract(Γ, e3) in
+    let E = E1 ∪ E2 ∪ E3 ∪ { τ2 = τ3 } in
+    (E, τ2)
 ```
 
 ## 単一化
@@ -101,8 +114,6 @@ Unify({ 't0 = i32, i32 = i32 } ⨄ { 't1 = i32 })
 
 ## 型検査で失敗する例
 
-以下のような関数定義を型検査することを考えます。
-
 ```wasm
 (func bar i32 (x [y : i64])
     (i32.add x y))
@@ -126,3 +137,51 @@ Extract(Γ, (i32.add x y))
 ```text
 Unify({ 't0 = i32 } ⨄ { i64 = i32 }) = error
 ```
+
+## 再帰的な関数を型検査する例
+
+```wasm
+(func fact i32 (n)
+    (if (i32.eqz n)
+        1
+        (i32.mul n (fact (i32.sub n 1)))))
+```
+`n` の型を `'t0` 、`fact` の型を `('t0) => i32` とします。
+
+型の方程式の抽出：
+
+```text
+Extract(Γ, (if (i32.eqz n) 1 (i32.mul n (fact i32.sub n 1))))
+  Extract(Γ, (i32.eqz n))
+    Extract(Γ, n)
+    <- (∅, 't0)
+  <- ({ 't0 = i32 }, i32)
+  Extract(Γ, 1)
+  <- (∅, i32)
+  Extract(Γ, (i32.mul n (fact (i32.sub n 1))))
+    Extract(Γ, n)
+    <- (∅, 't0)
+    Extract(Γ, (fact (i32.sub n 1)))
+      Extract(Γ, (i32.sub n 1))
+        Extract(Γ, n)
+        <- (∅, 't0)
+        Extract(Γ, 1)
+        <- (∅, i32)
+      <- ({ 't0 = i32, i32 = i32 }, i32)
+    <- ({ 't0 = i32, i32 = i32 }, i32)
+  <- ({ 't0 = i32, i32 = i32 }, i32)
+<- ({ 't0 = i32, i32 = i32 }, i32)
+```
+
+単一化：
+
+```text
+Unify({ 't0 = i32 } ⨄ { i32 = i32 })
+  Unify({ 't0 = i32 })
+    Unify(∅)
+    <- []
+  <- [i32/'t0]
+<- [i32/'t0]
+```
+
+`'t0` は `i32` に推論されました。
