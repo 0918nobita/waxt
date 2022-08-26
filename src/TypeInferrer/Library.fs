@@ -24,3 +24,20 @@ type Term =
     | Let of name: VarName * value: Term * body: Term
     | LetWithType of name: VarName * ty: Type * value: Term * body: Term
     | Application of funcName: FuncName * args: list<Term>
+
+type Context = Context of list<VarName * Type>
+
+type TypeEquation = TypeEquation of Set<Type * Type>
+
+type Assign = Assign of varName: VarName * ty: Type
+
+type UnusedVarNames = list<VarName>
+
+let extract
+    (context: Context)
+    (unusedVarNames: UnusedVarNames)
+    (term: Term)
+    : Result<Type * TypeEquation * UnusedVarNames, string> =
+    failwith "not implemented"
+
+let unify (equation: TypeEquation) : Result<list<Assign>, string> = failwith "not implemented"
