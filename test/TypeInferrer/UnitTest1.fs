@@ -8,4 +8,8 @@ open Waxt.TypeInferrer
 let Setup () = ()
 
 [<Test>]
-let Test1 () = Assert.Pass()
+let Test1 () =
+    extract [] (LetWithType("x", I32TyLit, I32Const 3, I32Add(Var "x", I32Const 4)))
+    |> printfn "%A"
+
+    Assert.Pass()
