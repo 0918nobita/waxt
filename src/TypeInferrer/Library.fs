@@ -16,6 +16,19 @@ type Type =
     | TyVar of name: string
     | Func of args: list<Type> * ret: Type
 
+    override this.ToString() =
+        match this with
+        | I32 -> "i32"
+        | I64 -> "i64"
+        | F32 -> "f32"
+        | F64 -> "f64"
+
+        | TyVar name -> $"'%s{name}"
+
+        | Func (args, ret) ->
+            let args = args |> List.map string |> String.concat ", "
+            $"(%s{args}) => %O{ret}"
+
 module Type =
     let fromLiteral (lit: TypeLiteral) =
         match lit with
@@ -36,20 +49,54 @@ type Term =
     | Application of funcName: string * args: list<Term>
     | Var of name: string
 
-type Context = list<string * Type>
+type Context = private Context of list<string * Type>
 
-type TypeEquation = Set<Type * Type>
+module Context =
+    let empty = Context []
+
+    let add (name: string) (ty: Type) (Context context) = Context((name, ty) :: context)
+
+    let tryFind (name: string) (Context context) : option<Type> =
+        context
+        |> List.tryFind (fun (name', ty) -> name' = name)
+        |> Option.map snd
+
+type TypeSimulEquation =
+    private
+    | TypeSimulEquation of Set<Type * Type>
+
+    override this.ToString() =
+        match this with
+        | TypeSimulEquation equations ->
+            equations
+            |> Seq.map (fun (ty1, ty2) -> $"%O{ty1} = %O{ty2}")
+            |> String.concat ", "
+            |> sprintf "{ %s }"
+
+module TypeSimulEquation =
+    let empty = TypeSimulEquation Set.empty
+
+    let addEquation (lhs: Type) (rhs: Type) (TypeSimulEquation equationSet) =
+        TypeSimulEquation(Set.add (lhs, rhs) equationSet)
+
+    let combine (TypeSimulEquation a) (TypeSimulEquation b) = TypeSimulEquation(Set.union a b)
+
+    let combineMany (equations: seq<TypeSimulEquation>) =
+        equations
+        |> Seq.map (fun (TypeSimulEquation e) -> e)
+        |> Set.unionMany
+        |> TypeSimulEquation
 
 type Assign = Assign of varName: string * ty: Type
 
-let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, string> =
+let rec extract (context: Context) (term: Term) : Result<TypeSimulEquation * Type, string> =
     match term with
-    | I32Const _ -> Ok(Set.empty, I32)
+    | I32Const _ -> Ok(TypeSimulEquation.empty, I32)
 
     | I32Eqz t ->
         result {
             let! (equation, ty) = extract context t
-            let equation = equation |> Set.add (ty, I32)
+            let equation = equation |> TypeSimulEquation.addEquation ty I32
             return (equation, I32)
         }
 
@@ -61,9 +108,9 @@ let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, st
             let! (e2, ty2) = extract context rhs
 
             let e3 =
-                Set.union e1 e2
-                |> Set.add (ty1, I32)
-                |> Set.add (ty2, I32)
+                TypeSimulEquation.combine e1 e2
+                |> TypeSimulEquation.addEquation ty1 I32
+                |> TypeSimulEquation.addEquation ty2 I32
 
             return (e3, I32)
         }
@@ -75,9 +122,9 @@ let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, st
             let! (e3, ty3) = extract context elseClause
 
             let e =
-                Set.union e1 e2
-                |> Set.union e3
-                |> Set.add (ty2, ty3)
+                TypeSimulEquation.combine e1 e2
+                |> TypeSimulEquation.combine e3
+                |> TypeSimulEquation.addEquation ty2 ty3
 
             return (e, ty2)
         }
@@ -85,28 +132,28 @@ let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, st
     | Let (name, value, body) ->
         result {
             let! (e1, ty1) = extract context value
-            let! (e2, ty2) = extract ((name, ty1) :: context) body
-            let e = Set.union e1 e2
+            let! (e2, ty2) = extract (Context.add name ty1 context) body
+            let e = TypeSimulEquation.combine e1 e2
             return (e, ty2)
         }
 
     | LetWithType (name, tyLit, value, body) ->
         result {
             let! (e1, ty1) = extract context value
-            let! (e2, ty2) = extract ((name, ty1) :: context) body
+            let! (e2, ty2) = extract (Context.add name ty1 context) body
 
             let e =
-                Set.union e1 e2
-                |> Set.add (ty1, Type.fromLiteral tyLit)
+                TypeSimulEquation.combine e1 e2
+                |> TypeSimulEquation.addEquation ty1 (Type.fromLiteral tyLit)
 
             return (e, ty2)
         }
 
     | Application (funcName, args) ->
         result {
-            let! (_, funcType) =
+            let! funcType =
                 context
-                |> List.tryFind (fun (name', _) -> name' = funcName)
+                |> Context.tryFind funcName
                 |> Result.requireSome $"%s{funcName} is not defined"
 
             match funcType with
@@ -119,11 +166,10 @@ let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, st
                 if List.length args <> List.length argTypes then
                     return! Error "Arity mismatch"
                 else
-                    let equation: TypeEquation =
-                        (args |> List.map fst)
-                        @ (args
-                           |> List.mapi (fun i (_, ty) -> Set.singleton (ty, argTypes.[i])))
-                        |> Set.unionMany
+                    let equation =
+                        (args
+                         |> List.mapi (fun i (e, ty) -> TypeSimulEquation.addEquation ty argTypes.[i] e))
+                        |> TypeSimulEquation.combineMany
 
                     return (equation, retType)
             | _ -> return! Error "This is not a function"
@@ -131,12 +177,12 @@ let rec extract (context: Context) (term: Term) : Result<TypeEquation * Type, st
 
     | Var name ->
         result {
-            let! (_, ty) =
+            let! ty =
                 context
-                |> List.tryFind (fun (name', _) -> name = name')
+                |> Context.tryFind name
                 |> Result.requireSome $"%s{name} is not defined"
 
-            return (Set.empty, ty)
+            return (TypeSimulEquation.empty, ty)
         }
 
 let rec unify (equation: list<Type * Type>) : Result<list<Assign>, string> =
