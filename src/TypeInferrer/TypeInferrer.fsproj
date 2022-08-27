@@ -5,7 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="TypeLiteral.fs"/>
+    <Compile Include="Term.fs" />
+    <Compile Include="Type.fs" />
+    <Compile Include="Context.fs" />
+    <Compile Include="TypeEquation.fs" />
+    <Compile Include="Extract.fs" />
+    <Compile Include="Unify.fs" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />
