@@ -1,5 +1,6 @@
-[<AutoOpen>]
 module Waxt.TypeInferrer.Unify
+
+open Type
 
 type Assign = Assign of varName: string * ty: Type
 

@@ -1,5 +1,6 @@
-[<AutoOpen>]
 module Waxt.TypeInferrer.TypeEquation
+
+open Type
 
 type TypeSimulEquation =
     private

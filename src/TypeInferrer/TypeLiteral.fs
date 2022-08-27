@@ -1,4 +1,3 @@
-[<AutoOpen>]
 module Waxt.TypeInferrer.TypeLiteral
 
 type TypeLiteral =

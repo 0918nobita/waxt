@@ -1,5 +1,6 @@
-[<AutoOpen>]
 module Waxt.TypeInferrer.Type
+
+open TypeLiteral
 
 type Type =
     | I32
@@ -7,7 +8,7 @@ type Type =
     | F32
     | F64
     | TyVar of name: string
-    | Func of args: list<Type> * ret: Type
+    | Func of FuncType
 
     override this.ToString() =
         match this with
@@ -15,10 +16,15 @@ type Type =
         | I64 -> "i64"
         | F32 -> "f32"
         | F64 -> "f64"
-
         | TyVar name -> $"'%s{name}"
+        | Func funcType -> $"%O{funcType}"
 
-        | Func (args, ret) ->
+and FuncType =
+    | FuncType of args: list<Type> * ret: Type
+
+    override this.ToString() =
+        match this with
+        | FuncType (args, ret) ->
             let args = args |> List.map string |> String.concat ", "
             $"(%s{args}) => %O{ret}"
 

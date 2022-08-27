@@ -6,9 +6,10 @@
 
   <ItemGroup>
     <Compile Include="TypeLiteral.fs"/>
-    <Compile Include="Term.fs" />
     <Compile Include="Type.fs" />
-    <Compile Include="Context.fs" />
+    <Compile Include="VarContext.fs" />
+    <Compile Include="FuncContext.fs" />
+    <Compile Include="Term.fs" />
     <Compile Include="TypeEquation.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Unify.fs" />
