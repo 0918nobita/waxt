@@ -1,5 +1,6 @@
 module Waxt.TypeInferrer.TypeEquation
 
+open System.Collections
 open Type
 
 type TypeSimulEquation =
@@ -14,6 +15,18 @@ type TypeSimulEquation =
             |> String.concat ", "
             |> sprintf "{ %s }"
 
+    interface IEnumerable with
+        member this.GetEnumerator() =
+            match this with
+            | TypeSimulEquation equations -> (equations :> IEnumerable).GetEnumerator()
+
+    interface Generic.IEnumerable<Type * Type> with
+        member this.GetEnumerator() =
+            match this with
+            | TypeSimulEquation equations ->
+                (equations :> Generic.IEnumerable<Type * Type>)
+                    .GetEnumerator()
+
 module TypeSimulEquation =
     let empty = TypeSimulEquation Set.empty
 
@@ -27,3 +40,7 @@ module TypeSimulEquation =
         |> Seq.map (fun (TypeSimulEquation e) -> e)
         |> Set.unionMany
         |> TypeSimulEquation
+
+let assign (tyVarName: string) (toTy: Type) (equations) =
+    equations
+    |> List.map (fun (name, ty) -> (name, Type.assign tyVarName toTy ty))

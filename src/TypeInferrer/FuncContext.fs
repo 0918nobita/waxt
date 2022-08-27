@@ -10,6 +10,9 @@ type FuncName =
         match this with
         | FuncName name -> name
 
+module FuncName =
+    let make name = FuncName name
+
 type FuncContext = private FuncContext of Map<string, FuncType>
 
 module FuncContext =
