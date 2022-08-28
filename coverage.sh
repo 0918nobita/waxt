@@ -1,7 +1,7 @@
 #!/bin/bash
 set -uev
 
-rm -rf test/**/TestResults
+rm -rf test/**/TestResults coverage
 
 dotnet test --collect:"XPlat Code Coverage"
 
