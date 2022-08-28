@@ -1,1 +1,1 @@
-namespace Waxt.IR
+namespace Waxt.Location
