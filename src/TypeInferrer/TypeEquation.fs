@@ -3,15 +3,22 @@ module Waxt.TypeInferrer.TypeEquation
 open System.Collections
 open Type
 
+type TypeEquation =
+    | TypeEquation of lhs: Type * rhs: Type
+
+    override this.ToString() =
+        match this with
+        | TypeEquation (lhs, rhs) -> $"%O{lhs} = %O{rhs}"
+
 type TypeSimulEquation =
     private
-    | TypeSimulEquation of Set<Type * Type>
+    | TypeSimulEquation of Set<TypeEquation>
 
     override this.ToString() =
         match this with
         | TypeSimulEquation equations ->
             equations
-            |> Seq.map (fun (ty1, ty2) -> $"%O{ty1} = %O{ty2}")
+            |> Seq.map string
             |> String.concat ", "
             |> sprintf "{ %s }"
 
@@ -20,18 +27,18 @@ type TypeSimulEquation =
             match this with
             | TypeSimulEquation equations -> (equations :> IEnumerable).GetEnumerator()
 
-    interface Generic.IEnumerable<Type * Type> with
+    interface Generic.IEnumerable<TypeEquation> with
         member this.GetEnumerator() =
             match this with
             | TypeSimulEquation equations ->
-                (equations :> Generic.IEnumerable<Type * Type>)
+                (equations :> Generic.IEnumerable<TypeEquation>)
                     .GetEnumerator()
 
 module TypeSimulEquation =
     let empty = TypeSimulEquation Set.empty
 
     let addEquation (lhs: Type) (rhs: Type) (TypeSimulEquation equationSet) =
-        TypeSimulEquation(Set.add (lhs, rhs) equationSet)
+        TypeSimulEquation(Set.add (TypeEquation(lhs, rhs)) equationSet)
 
     let combine (TypeSimulEquation a) (TypeSimulEquation b) = TypeSimulEquation(Set.union a b)
 
@@ -41,6 +48,6 @@ module TypeSimulEquation =
         |> Set.unionMany
         |> TypeSimulEquation
 
-let assign (tyVarName: TyVarName) (toTy: Type) (equations: list<Type * Type>) =
+let assign (tyVarName: TyVarName) (toTy: Type) (equations: list<TypeEquation>) : list<TypeEquation> =
     equations
-    |> List.map (fun (name, ty) -> (name, Type.assign tyVarName toTy ty))
+    |> List.map (fun (TypeEquation (name, ty)) -> TypeEquation(name, Type.assign tyVarName toTy ty))

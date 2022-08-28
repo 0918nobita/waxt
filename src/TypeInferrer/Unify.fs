@@ -6,15 +6,15 @@ open TypeEquation
 
 type Assign = Assign of TyVarName * Type
 
-let rec private unify' (equations: list<Type * Type>) : Result<list<Assign>, string> =
+let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, string> =
     match equations with
     | [] -> Ok []
 
-    | (ty1, ty2) :: rest when ty1 = ty2 -> unify' rest
+    | TypeEquation (ty1, ty2) :: rest when ty1 = ty2 -> unify' rest
 
-    | ((TyVar name, ty)
+    | (TypeEquation (TyVar name, ty)
 
-    | (ty, TyVar name)) :: rest ->
+    | TypeEquation (ty, TyVar name)) :: rest ->
         let frv = Type.freeTypeVars ty
 
         if List.contains name frv then
@@ -25,15 +25,15 @@ let rec private unify' (equations: list<Type * Type>) : Result<list<Assign>, str
                 return Assign(name, ty) :: assigns
             }
 
-    | (Func (FuncType (args, ret)), Func (FuncType (args', ret'))) :: rest ->
+    | TypeEquation (Func (FuncType (args, ret)), Func (FuncType (args', ret'))) :: rest ->
         if List.length args <> List.length args' then
             Error "Arity mismatch"
         else
             args
-            |> List.mapi (fun i ty -> (ty, args'.[i]))
+            |> List.mapi (fun i ty -> TypeEquation(ty, args'.[i]))
             |> unify'
 
-    | equation -> Error $"Cannot solve %O{equation}"
+    | equation :: _ -> Error $"Cannot solve %O{equation}"
 
 let unify (equations: TypeSimulEquation) =
     equations
