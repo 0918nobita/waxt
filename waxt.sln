@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D291AD9B-8
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Waxt.TypeInferrer.Test", "test\TypeInferrer\Waxt.TypeInferrer.Test.fsproj", "{C0E27E79-1D29-4BEC-A37E-256FFEBDB6C5}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Waxt.IR", "src\IR\Waxt.IR.fsproj", "{AEC072CD-6DD6-40AB-885E-37E2750D4FBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +30,14 @@ Global
 		{C0E27E79-1D29-4BEC-A37E-256FFEBDB6C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0E27E79-1D29-4BEC-A37E-256FFEBDB6C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0E27E79-1D29-4BEC-A37E-256FFEBDB6C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEC072CD-6DD6-40AB-885E-37E2750D4FBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEC072CD-6DD6-40AB-885E-37E2750D4FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEC072CD-6DD6-40AB-885E-37E2750D4FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEC072CD-6DD6-40AB-885E-37E2750D4FBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{978CED3D-1249-4A43-8AFE-A29961B7F462} = {40F3C470-ECCB-4766-B1D0-468189D1F266}
 		{C0E27E79-1D29-4BEC-A37E-256FFEBDB6C5} = {D291AD9B-86C1-4C8F-B8D1-41AA4D6F4B5D}
+		{AEC072CD-6DD6-40AB-885E-37E2750D4FBC} = {40F3C470-ECCB-4766-B1D0-468189D1F266}
 	EndGlobalSection
 EndGlobal
