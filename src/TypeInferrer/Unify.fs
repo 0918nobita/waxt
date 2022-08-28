@@ -4,7 +4,7 @@ open FsToolkit.ErrorHandling
 open Type
 open TypeEquation
 
-type Assign = Assign of varName: string * ty: Type
+type Assign = Assign of TyVarName * Type
 
 let rec private unify' (equations: list<Type * Type>) : Result<list<Assign>, string> =
     match equations with
@@ -18,7 +18,7 @@ let rec private unify' (equations: list<Type * Type>) : Result<list<Assign>, str
         let frv = Type.freeTypeVars ty
 
         if List.contains name frv then
-            Error $"Failed to unify type variable %s{name}"
+            Error $"Failed to unify type variable %O{name}"
         else
             result {
                 let! assigns = unify' (assign name ty rest)
@@ -35,7 +35,7 @@ let rec private unify' (equations: list<Type * Type>) : Result<list<Assign>, str
 
     | equation -> Error $"Cannot solve %O{equation}"
 
-let unify (equations: seq<Type * Type>) =
+let unify (equations: TypeSimulEquation) =
     equations
     |> List.ofSeq
     |> unify'

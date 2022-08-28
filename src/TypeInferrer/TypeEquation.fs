@@ -41,6 +41,6 @@ module TypeSimulEquation =
         |> Set.unionMany
         |> TypeSimulEquation
 
-let assign (tyVarName: string) (toTy: Type) (equations) =
+let assign (tyVarName: TyVarName) (toTy: Type) (equations: list<Type * Type>) =
     equations
     |> List.map (fun (name, ty) -> (name, Type.assign tyVarName toTy ty))

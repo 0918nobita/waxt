@@ -2,12 +2,23 @@ module Waxt.TypeInferrer.Type
 
 open TypeLiteral
 
+type TyVarName =
+    private
+    | TyVarName of string
+
+    override this.ToString() =
+        match this with
+        | TyVarName name -> $"'%s{name}"
+
+module TyVarName =
+    let make name = TyVarName name
+
 type Type =
     | I32
     | I64
     | F32
     | F64
-    | TyVar of name: string
+    | TyVar of TyVarName
     | Func of FuncType
 
     override this.ToString() =
@@ -16,7 +27,7 @@ type Type =
         | I64 -> "i64"
         | F32 -> "f32"
         | F64 -> "f64"
-        | TyVar name -> $"'%s{name}"
+        | TyVar name -> $"%O{name}"
         | Func funcType -> $"%O{funcType}"
 
 and FuncType =
@@ -45,7 +56,7 @@ module Type =
             (args @ ret) |> List.distinct
         | _ -> []
 
-    let rec assign (tyVarName: string) (toTy: Type) (ty: Type) =
+    let rec assign (tyVarName: TyVarName) (toTy: Type) (ty: Type) =
         match ty with
         | TyVar name when name = tyVarName -> toTy
         | Func (FuncType (args, ret)) ->
