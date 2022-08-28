@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{40F3C470-ECCB-4766-B1D0-468189D1F266}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeInferrer", "src\TypeInferrer\TypeInferrer.fsproj", "{978CED3D-1249-4A43-8AFE-A29961B7F462}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeInferrer", "src\TypeInferrer\Waxt.TypeInferrer.fsproj", "{978CED3D-1249-4A43-8AFE-A29961B7F462}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D291AD9B-86C1-4C8F-B8D1-41AA4D6F4B5D}"
 EndProject

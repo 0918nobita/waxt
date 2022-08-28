@@ -1,6 +1,4 @@
-module Waxt.TypeInferrer.FuncContext
-
-open Type
+namespace Waxt.TypeInferrer
 
 type FuncName =
     private

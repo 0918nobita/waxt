@@ -1,6 +1,4 @@
-module Waxt.TypeInferrer.Type
-
-open TypeLiteral
+namespace Waxt.TypeInferrer
 
 type TyVarName =
     private

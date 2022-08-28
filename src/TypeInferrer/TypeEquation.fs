@@ -1,7 +1,6 @@
 module Waxt.TypeInferrer.TypeEquation
 
 open System.Collections
-open Type
 
 type TypeEquation =
     | TypeEquation of lhs: Type * rhs: Type

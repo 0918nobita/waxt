@@ -1,12 +1,9 @@
-module Waxt.TypeInferrer.Test
+module Waxt.TypeInferrer.Test.Program
 
 open NUnit.Framework
+open Waxt.TypeInferrer
 open Waxt.TypeInferrer.Extract
-open Waxt.TypeInferrer.FuncContext
-open Waxt.TypeInferrer.Term
-open Waxt.TypeInferrer.Type
 open Waxt.TypeInferrer.Unify
-open Waxt.TypeInferrer.VarContext
 
 [<SetUp>]
 let Setup () = ()

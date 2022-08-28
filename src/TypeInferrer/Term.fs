@@ -1,8 +1,4 @@
-module Waxt.TypeInferrer.Term
-
-open FuncContext
-open TypeLiteral
-open VarContext
+namespace Waxt.TypeInferrer
 
 type Term =
     | I32Const of n: int
@@ -11,7 +7,7 @@ type Term =
     | I32Sub of lhs: Term * rhs: Term
     | I32Mul of lhs: Term * rhs: Term
     | If of cond: Term * thenClause: Term * elseClause: Term
-    | Let of varName: VarName * value: Term * body: Term
-    | LetWithType of varName: VarName * tyLit: TypeLiteral * value: Term * body: Term
-    | Application of funcName: FuncName * args: list<Term>
-    | Var of name: VarName
+    | Let of VarName * boundValue: Term * body: Term
+    | LetWithType of VarName * TypeLiteral * value: Term * body: Term
+    | Application of FuncName * args: list<Term>
+    | Var of VarName

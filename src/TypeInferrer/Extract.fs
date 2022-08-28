@@ -1,11 +1,7 @@
 module Waxt.TypeInferrer.Extract
 
 open FsToolkit.ErrorHandling
-open FuncContext
-open Term
-open Type
 open TypeEquation
-open VarContext
 
 let rec extract
     (funcContext: FuncContext)

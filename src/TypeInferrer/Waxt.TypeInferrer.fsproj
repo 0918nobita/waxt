@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Waxt.TypeInferrer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

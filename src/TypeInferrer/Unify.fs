@@ -1,7 +1,6 @@
 module Waxt.TypeInferrer.Unify
 
 open FsToolkit.ErrorHandling
-open Type
 open TypeEquation
 
 type Assign = Assign of TyVarName * Type

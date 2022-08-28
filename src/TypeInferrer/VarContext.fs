@@ -1,6 +1,4 @@
-module Waxt.TypeInferrer.VarContext
-
-open Type
+namespace Waxt.TypeInferrer
 
 type VarName =
     private

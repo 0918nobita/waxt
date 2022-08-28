@@ -1,4 +1,4 @@
-module Waxt.TypeInferrer.TypeLiteral
+namespace Waxt.TypeInferrer
 
 type TypeLiteral =
     | I32TyLit
