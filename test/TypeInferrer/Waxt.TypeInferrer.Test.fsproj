@@ -4,10 +4,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <RootNamespace>Waxt.TypeInferrer.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="UnitTest1.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
