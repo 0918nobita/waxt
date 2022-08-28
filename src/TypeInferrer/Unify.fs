@@ -25,12 +25,13 @@ let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, st
                 return Assign(name, ty) :: assigns
             }
 
-    | TypeEquation (Func (FuncType (args, ret)), Func (FuncType (args', ret'))) :: rest ->
+    | TypeEquation (Func (FuncType (args, ret) as func1), Func (FuncType (args', ret') as func2)) :: rest ->
         if List.length args <> List.length args' then
-            Error "Arity mismatch"
+            Error $"Arity mismatch: %O{func1} and %O{func2}"
         else
-            args
-            |> List.mapi (fun i ty -> TypeEquation(ty, args'.[i]))
+            TypeEquation(ret, ret') :: rest
+            @ (args
+               |> List.mapi (fun i ty -> TypeEquation(ty, args'.[i])))
             |> unify'
 
     | equation :: _ -> Error $"Cannot solve %O{equation}"
