@@ -1,6 +1,7 @@
 module WAXT.TypeInferrer.Unify
 
 open FsToolkit.ErrorHandling
+open WAXT.Type
 open TypeEquation
 
 type Assign = Assign of TyVarName * Type
@@ -9,11 +10,11 @@ let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, st
     match equations with
     | [] -> Ok []
 
-    | TypeEquation (ty1, ty2) :: rest when ty1 = ty2 -> unify' rest
+    | TypeEquation (ty1, ty2, _) :: rest when ty1 = ty2 -> unify' rest
 
-    | (TypeEquation (Type.TyVar name, ty)
+    | (TypeEquation (TyVar name, ty, _)
 
-    | TypeEquation (ty, Type.TyVar name)) :: rest ->
+    | TypeEquation (ty, TyVar name, _)) :: rest ->
         let frv = Type.freeTypeVars ty
 
         if List.contains name frv then
@@ -24,13 +25,13 @@ let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, st
                 return Assign(name, ty) :: assigns
             }
 
-    | TypeEquation (Type.Func (FuncType (args, ret) as func1), Type.Func (FuncType (args', ret') as func2)) :: rest ->
+    | TypeEquation (Func (FuncType (args, ret) as func1), Func (FuncType (args', ret') as func2), at) :: rest ->
         if List.length args <> List.length args' then
             Error $"Arity mismatch: %O{func1} and %O{func2}"
         else
-            TypeEquation(ret, ret') :: rest
+            TypeEquation(ret, ret', at) :: rest
             @ (args
-               |> List.mapi (fun i ty -> TypeEquation(ty, args'.[i])))
+               |> List.mapi (fun i ty -> TypeEquation(ty, args'.[i], at)))
             |> unify'
 
     | equation :: _ -> Error $"Cannot solve %O{equation}"

@@ -1,6 +1,6 @@
 namespace WAXT.IR
 
-open WAXT.NumType
+open WAXT.Type
 
 type LocalIndex = LocalIndex of uint
 
@@ -17,6 +17,6 @@ type TypedTerm =
     | Application of FuncIndex * args: list<TypedTerm>
     | Var of LocalIndex
 
-type FuncParams = list<NumType>
+type FuncParams = list<Type>
 
-type FuncDef = FuncDef of FuncParams * ret: option<NumType> * body: list<TypedTerm>
+type FuncDef = FuncDef of FuncParams * ret: option<Type> * body: list<TypedTerm>

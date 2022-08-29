@@ -1,13 +1,38 @@
 module WAXT.TypeInferrer.TypeEquation
 
+open System
 open System.Collections
+open WAXT.Location
+open WAXT.Type
 
+[<CustomEquality; CustomComparison>]
 type TypeEquation =
-    | TypeEquation of lhs: Type * rhs: Type
+    | TypeEquation of lhs: Type * rhs: Type * at: Range
 
     override this.ToString() =
         match this with
-        | TypeEquation (lhs, rhs) -> $"%O{lhs} = %O{rhs}"
+        | TypeEquation (lhs, rhs, at) -> $"%O{lhs} = %O{rhs}"
+
+    override this.Equals(other) =
+        match other with
+        | :? TypeEquation as (TypeEquation (lhs', rhs', _)) ->
+            match this with
+            | TypeEquation (lhs, rhs, _) -> lhs = lhs' && rhs = rhs'
+        | _ -> false
+
+    override this.GetHashCode() =
+        match this with
+        | TypeEquation (lhs, rhs, _) -> (lhs, rhs).GetHashCode()
+
+    interface IComparable with
+        member this.CompareTo(other) =
+            match other with
+            | :? TypeEquation as (TypeEquation (lhs', rhs', _)) ->
+                match this with
+                | TypeEquation (lhs, rhs, _) ->
+                    ((lhs, rhs) :> IComparable)
+                        .CompareTo((lhs', rhs'))
+            | _ -> -1
 
 type TypeSimulEquation =
     private
@@ -36,8 +61,8 @@ type TypeSimulEquation =
 module TypeSimulEquation =
     let empty = TypeSimulEquation Set.empty
 
-    let addEquation (lhs: Type) (rhs: Type) (TypeSimulEquation equationSet) =
-        TypeSimulEquation(Set.add (TypeEquation(lhs, rhs)) equationSet)
+    let addEquation (lhs: Type) (rhs: Type) (at: Range) (TypeSimulEquation equationSet) =
+        TypeSimulEquation(Set.add (TypeEquation(lhs, rhs, at)) equationSet)
 
     let combine (TypeSimulEquation a) (TypeSimulEquation b) = TypeSimulEquation(Set.union a b)
 
@@ -49,4 +74,4 @@ module TypeSimulEquation =
 
 let assign (tyVarName: TyVarName) (toTy: Type) (equations: list<TypeEquation>) : list<TypeEquation> =
     equations
-    |> List.map (fun (TypeEquation (name, ty)) -> TypeEquation(name, Type.assign tyVarName toTy ty))
+    |> List.map (fun (TypeEquation (name, ty, at)) -> TypeEquation(name, Type.assign tyVarName toTy ty, at))

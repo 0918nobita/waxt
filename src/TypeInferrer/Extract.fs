@@ -2,43 +2,51 @@ module WAXT.TypeInferrer.Extract
 
 open FsToolkit.ErrorHandling
 open TypeEquation
-open WAXT.UntypedAst
+open WAXT.AST
+open WAXT.Type
+
+let private typeLiteralToType (typeLiteral: TypeLiteral) =
+    match typeLiteral with
+    | TypeLiteral.I32 -> NumType NumType.I32
+    | TypeLiteral.I64 -> NumType NumType.I64
+    | TypeLiteral.F32 -> NumType NumType.F32
+    | TypeLiteral.F64 -> NumType NumType.F64
 
 let rec extract
     (funcContext: FuncContext)
     (varContext: VarContext)
-    (term: Term)
+    (term: MutableTerm)
     : Result<TypeSimulEquation * Type, string> =
     match term with
-    | I32Const _ -> Ok(TypeSimulEquation.empty, Type.I32)
+    | I32Const _ -> Ok(TypeSimulEquation.empty, NumType NumType.I32)
 
-    | I32Eqz (t, _) ->
+    | I32Eqz (t, at) ->
         result {
             let! (equation, ty) = extract funcContext varContext t
 
             let equation =
                 equation
-                |> TypeSimulEquation.addEquation ty Type.I32
+                |> TypeSimulEquation.addEquation ty (NumType NumType.I32) at
 
-            return (equation, Type.I32)
+            return (equation, NumType NumType.I32)
         }
 
-    | I32Add (lhs, rhs, _)
-    | I32Sub (lhs, rhs, _)
-    | I32Mul (lhs, rhs, _) ->
+    | I32Add (lhs, rhs, at)
+    | I32Sub (lhs, rhs, at)
+    | I32Mul (lhs, rhs, at) ->
         result {
             let! (e1, ty1) = extract funcContext varContext lhs
             let! (e2, ty2) = extract funcContext varContext rhs
 
             let e3 =
                 TypeSimulEquation.combine e1 e2
-                |> TypeSimulEquation.addEquation ty1 Type.I32
-                |> TypeSimulEquation.addEquation ty2 Type.I32
+                |> TypeSimulEquation.addEquation ty1 (NumType NumType.I32) at
+                |> TypeSimulEquation.addEquation ty2 (NumType NumType.I32) at
 
-            return (e3, Type.I32)
+            return (e3, NumType NumType.I32)
         }
 
-    | If (cond, thenClause, elseClause, _) ->
+    | If (cond, thenClause, elseClause, at) ->
         result {
             let! (e1, _) = extract funcContext varContext cond
             let! (e2, ty2) = extract funcContext varContext thenClause
@@ -47,7 +55,7 @@ let rec extract
             let e =
                 TypeSimulEquation.combine e1 e2
                 |> TypeSimulEquation.combine e3
-                |> TypeSimulEquation.addEquation ty2 ty3
+                |> TypeSimulEquation.addEquation ty2 ty3 at
 
             return (e, ty2)
         }
@@ -60,19 +68,19 @@ let rec extract
             return (e, ty2)
         }
 
-    | LetWithType (name, tyLit, value, body, _) ->
+    | LetWithType (name, tyLit, value, body, at) ->
         result {
             let! (e1, ty1) = extract funcContext varContext value
             let! (e2, ty2) = extract funcContext (VarContext.add name ty1 varContext) body
 
             let e =
                 TypeSimulEquation.combine e1 e2
-                |> TypeSimulEquation.addEquation ty1 (Type.fromLiteral tyLit)
+                |> TypeSimulEquation.addEquation ty1 (typeLiteralToType tyLit) at
 
             return (e, ty2)
         }
 
-    | Application (funcName, args, _) ->
+    | Application (funcName, args, at) ->
         result {
             let! (FuncType (argTypes, retType)) =
                 funcContext
@@ -89,7 +97,7 @@ let rec extract
             else
                 let equation =
                     (args
-                     |> List.mapi (fun i (e, ty) -> TypeSimulEquation.addEquation ty argTypes.[i] e))
+                     |> List.mapi (fun i (e, ty) -> TypeSimulEquation.addEquation ty argTypes.[i] at e))
                     |> TypeSimulEquation.combineMany
 
                 return (equation, retType)
@@ -101,6 +109,8 @@ let rec extract
                 varContext
                 |> VarContext.tryFind name
                 |> Result.requireSome $"%O{name} is not defined"
+
+            tyRef.Value <- Some ty
 
             return (TypeSimulEquation.empty, ty)
         }

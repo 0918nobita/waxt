@@ -1,4 +1,4 @@
-namespace WAXT.UntypedAst
+namespace WAXT.AST
 
 [<RequireQualifiedAccess>]
 type TypeLiteral =

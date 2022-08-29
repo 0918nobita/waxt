@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Type.fs" />
     <Compile Include="VarContext.fs" />
     <Compile Include="FuncContext.fs" />
     <Compile Include="TypeEquation.fs" />
