@@ -10,8 +10,8 @@ WAT (WebAssembly Text Format) を少し拡張して、人間にとって書き�
 
 WAXT :
 
-```text
-export func add_and_store(addr: i32, x: i22, y: i32) {
+```kotlin
+export fun add_and_store(addr: i32, x: i22, y: i32) {
     i32_store(addr, x + y)
 }
 ```
@@ -28,16 +28,26 @@ WAT (コンパイル後) :
             (i32.add (local.get $x) (local.get $y)))))
 ```
 
-### 定数
+### 引数・`let` 束縛
 
-デフォルトですべての引数・束縛はイミュータブルであり、再代入はコンパイルエラーとなります。
+デフォルトですべての引数・`let` 束縛はイミュータブルであり、代入はコンパイルエラーとなります。引数・`let` 束縛に `mut` キーワードを付与するとミュータブルとなり、代入が許可されます。代入には `<-` キーワードを使用します。
 
-```text
-func foo(x: i32, y: i32) -> i32 {
-    let x' = x + 2
-    let y' = y + 3
-    // y <- y + 3 // compile error
-    x' * y'
+```kotlin
+fun foo(x: i32, mut y: i32): i32 {
+    // x <- x + 1;       // compile error
+    y <- y + 1;          // updates value of `y`
+
+    let x2 = x + 2;      // new let binding (immutable)
+    // x2 <- x2 + 3;     // compile error
+
+    let mut y4 = y + 2;  // new let binding (mutable)
+    y4 <- y4 + 1;
+
+    let x = x2 + 3;      // shadowing
+
+    let y = y4 + 4;
+
+    x * y  // (x + 5) * (y + 8)
 }
 ```
 
@@ -57,6 +67,9 @@ dotnet test
 
 ```mermaid
 graph TB
+  AST-->Location
+  AST-->Type
   IR-->Location
+  IR-->Type
   TypeInferrer-->AST
 ```
