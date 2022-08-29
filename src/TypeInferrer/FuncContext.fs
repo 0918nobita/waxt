@@ -1,22 +1,13 @@
 namespace Waxt.TypeInferrer
 
-type FuncName =
-    private
-    | FuncName of string
+open Waxt.UntypedAst
 
-    override this.ToString() =
-        match this with
-        | FuncName name -> name
-
-module FuncName =
-    let make name = FuncName name
-
-type FuncContext = private FuncContext of Map<string, FuncType>
+type FuncContext = private FuncContext of Map<FuncName, FuncType>
 
 module FuncContext =
     let empty = FuncContext Map.empty
 
-    let add (FuncName name) (funcTy: FuncType) (FuncContext context) =
-        context |> Map.add name funcTy |> FuncContext
+    let add (funcName: FuncName) (funcTy: FuncType) (FuncContext context) =
+        context |> Map.add funcName funcTy |> FuncContext
 
-    let tryFind (FuncName name) (FuncContext context) = context |> Map.tryFind name
+    let tryFind (funcName: FuncName) (FuncContext context) = context |> Map.tryFind funcName

@@ -2,15 +2,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>Waxt.IR</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Location\Waxt.Location.fsproj" />
+    <Compile Include="VarName.fs"/>
+    <Compile Include="FuncName.fs" />
+    <Compile Include="TypeLiteral.fs" />
+    <Compile Include="Term.fs" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

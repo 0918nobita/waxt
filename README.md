@@ -57,7 +57,6 @@ dotnet test
 
 ```mermaid
 graph TB
-  Location
-  IR
-  TypeInferrer
+  IR-->Location
+  TypeInferrer-->UntypedAst
 ```

@@ -2,18 +2,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>Waxt.TypeInferrer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="TypeLiteral.fs"/>
     <Compile Include="Type.fs" />
     <Compile Include="VarContext.fs" />
     <Compile Include="FuncContext.fs" />
-    <Compile Include="Term.fs" />
     <Compile Include="TypeEquation.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Unify.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UntypedAst\Waxt.UntypedAst.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

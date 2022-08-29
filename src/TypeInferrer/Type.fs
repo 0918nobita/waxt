@@ -1,5 +1,7 @@
 namespace Waxt.TypeInferrer
 
+open Waxt.UntypedAst
+
 type TyVarName =
     private
     | TyVarName of string
@@ -40,10 +42,10 @@ and FuncType =
 module Type =
     let fromLiteral (lit: TypeLiteral) =
         match lit with
-        | I32TyLit -> I32
-        | I64TyLit -> I64
-        | F32TyLit -> F32
-        | F64TyLit -> F64
+        | TypeLiteral.I32 -> I32
+        | TypeLiteral.I64 -> I64
+        | TypeLiteral.F32 -> F32
+        | TypeLiteral.F64 -> F64
 
     let rec freeTypeVars (ty: Type) =
         match ty with

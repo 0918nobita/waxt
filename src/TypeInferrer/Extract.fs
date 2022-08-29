@@ -2,6 +2,7 @@ module Waxt.TypeInferrer.Extract
 
 open FsToolkit.ErrorHandling
 open TypeEquation
+open Waxt.UntypedAst
 
 let rec extract
     (funcContext: FuncContext)
@@ -9,13 +10,17 @@ let rec extract
     (term: Term)
     : Result<TypeSimulEquation * Type, string> =
     match term with
-    | I32Const _ -> Ok(TypeSimulEquation.empty, I32)
+    | I32Const _ -> Ok(TypeSimulEquation.empty, Type.I32)
 
     | I32Eqz t ->
         result {
             let! (equation, ty) = extract funcContext varContext t
-            let equation = equation |> TypeSimulEquation.addEquation ty I32
-            return (equation, I32)
+
+            let equation =
+                equation
+                |> TypeSimulEquation.addEquation ty Type.I32
+
+            return (equation, Type.I32)
         }
 
     | I32Add (lhs, rhs)
@@ -27,10 +32,10 @@ let rec extract
 
             let e3 =
                 TypeSimulEquation.combine e1 e2
-                |> TypeSimulEquation.addEquation ty1 I32
-                |> TypeSimulEquation.addEquation ty2 I32
+                |> TypeSimulEquation.addEquation ty1 Type.I32
+                |> TypeSimulEquation.addEquation ty2 Type.I32
 
-            return (e3, I32)
+            return (e3, Type.I32)
         }
 
     | If (cond, thenClause, elseClause) ->

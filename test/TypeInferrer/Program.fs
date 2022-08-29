@@ -4,6 +4,7 @@ open NUnit.Framework
 open Waxt.TypeInferrer
 open Waxt.TypeInferrer.Extract
 open Waxt.TypeInferrer.Unify
+open Waxt.UntypedAst
 
 [<SetUp>]
 let Setup () = ()

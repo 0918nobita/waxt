@@ -1,4 +1,4 @@
-namespace Waxt.TypeInferrer
+namespace Waxt.UntypedAst
 
 type Term =
     | I32Const of n: int

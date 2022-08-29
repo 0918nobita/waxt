@@ -1,24 +1,15 @@
 namespace Waxt.TypeInferrer
 
-type VarName =
-    private
-    | VarName of string
+open Waxt.UntypedAst
 
-    override this.ToString() =
-        match this with
-        | VarName name -> name
-
-module VarName =
-    let make name = VarName name
-
-type VarContext = private VarContext of list<string * Type>
+type VarContext = private VarContext of list<VarName * Type>
 
 module VarContext =
     let empty = VarContext []
 
-    let add (VarName name) (ty: Type) (VarContext context) = VarContext((name, ty) :: context)
+    let add (varName: VarName) (ty: Type) (VarContext context) = VarContext((varName, ty) :: context)
 
-    let tryFind (VarName name) (VarContext context) : option<Type> =
+    let tryFind (varName: VarName) (VarContext context) : option<Type> =
         context
-        |> List.tryFind (fun (name', _) -> name' = name)
+        |> List.tryFind (fun (varName', _) -> varName' = varName)
         |> Option.map snd
