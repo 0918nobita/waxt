@@ -2,17 +2,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <IsPackable>false</IsPackable>
-    <GenerateProgramFile>false</GenerateProgramFile>
-    <RootNamespace>Waxt.TypeInferrer.Test</RootNamespace>
+    <AssemblyName>WAXT.IR</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Program.fs" />
+    <Compile Include="Library.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TypeInferrer\Waxt.TypeInferrer.fsproj" />
+    <ProjectReference Include="..\Location\Location.fsproj" />
+    <ProjectReference Include="..\NumType\NumType.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

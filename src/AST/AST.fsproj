@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>WAXT.AST</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +10,11 @@
     <Compile Include="FuncName.fs" />
     <Compile Include="TypeLiteral.fs" />
     <Compile Include="Term.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Location\Location.fsproj" />
+    <ProjectReference Include="..\NumType\NumType.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

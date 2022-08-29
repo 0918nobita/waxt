@@ -1,10 +1,11 @@
-module Waxt.TypeInferrer.Test.Program
+module WAXT.TypeInferrer.Test.Program
 
 open NUnit.Framework
-open Waxt.TypeInferrer
-open Waxt.TypeInferrer.Extract
-open Waxt.TypeInferrer.Unify
-open Waxt.UntypedAst
+open WAXT.Location
+open WAXT.TypeInferrer
+open WAXT.TypeInferrer.Extract
+open WAXT.TypeInferrer.Unify
+open WAXT.UntypedAst
 
 [<SetUp>]
 let Setup () = ()
@@ -18,6 +19,8 @@ let wantOk (res: Result<'a, 'b>) : 'a =
 
 [<Test>]
 let Test1 () =
+    let at = Range.fromPos Pos.origin
+
     let fact = FuncName.make "fact"
     let n = VarName.make "n"
 
@@ -34,7 +37,16 @@ let Test1 () =
         extract
             funcContext
             varContext
-            (If(I32Eqz(Var n), I32Const 1, I32Mul(Var n, Application(fact, [ I32Sub(Var n, I32Const 1) ]))))
+            (If(
+                I32Eqz(Var(n, ref None, at), at),
+                I32Const(1, at),
+                I32Mul(
+                    Var(n, ref None, at),
+                    Application(fact, [ I32Sub(Var(n, ref None, at), I32Const(1, at), at) ], at),
+                    at
+                ),
+                at
+            ))
         |> wantOk
 
     printfn "%O" simulEquation

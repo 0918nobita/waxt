@@ -1,4 +1,4 @@
-namespace Waxt.UntypedAst
+namespace WAXT.UntypedAst
 
 type FuncName =
     private

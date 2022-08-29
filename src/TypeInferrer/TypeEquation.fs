@@ -1,4 +1,4 @@
-module Waxt.TypeInferrer.TypeEquation
+module WAXT.TypeInferrer.TypeEquation
 
 open System.Collections
 

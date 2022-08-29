@@ -1,4 +1,4 @@
-module Waxt.TypeInferrer.Unify
+module WAXT.TypeInferrer.Unify
 
 open FsToolkit.ErrorHandling
 open TypeEquation

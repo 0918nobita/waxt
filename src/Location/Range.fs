@@ -1,4 +1,4 @@
-namespace Waxt.Location
+namespace WAXT.Location
 
 type Range =
     private

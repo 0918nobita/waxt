@@ -1,8 +1,8 @@
-module Waxt.TypeInferrer.Extract
+module WAXT.TypeInferrer.Extract
 
 open FsToolkit.ErrorHandling
 open TypeEquation
-open Waxt.UntypedAst
+open WAXT.UntypedAst
 
 let rec extract
     (funcContext: FuncContext)
@@ -12,7 +12,7 @@ let rec extract
     match term with
     | I32Const _ -> Ok(TypeSimulEquation.empty, Type.I32)
 
-    | I32Eqz t ->
+    | I32Eqz (t, _) ->
         result {
             let! (equation, ty) = extract funcContext varContext t
 
@@ -23,9 +23,9 @@ let rec extract
             return (equation, Type.I32)
         }
 
-    | I32Add (lhs, rhs)
-    | I32Sub (lhs, rhs)
-    | I32Mul (lhs, rhs) ->
+    | I32Add (lhs, rhs, _)
+    | I32Sub (lhs, rhs, _)
+    | I32Mul (lhs, rhs, _) ->
         result {
             let! (e1, ty1) = extract funcContext varContext lhs
             let! (e2, ty2) = extract funcContext varContext rhs
@@ -38,7 +38,7 @@ let rec extract
             return (e3, Type.I32)
         }
 
-    | If (cond, thenClause, elseClause) ->
+    | If (cond, thenClause, elseClause, _) ->
         result {
             let! (e1, _) = extract funcContext varContext cond
             let! (e2, ty2) = extract funcContext varContext thenClause
@@ -52,7 +52,7 @@ let rec extract
             return (e, ty2)
         }
 
-    | Let (name, value, body) ->
+    | Let (name, value, body, _) ->
         result {
             let! (e1, ty1) = extract funcContext varContext value
             let! (e2, ty2) = extract funcContext (VarContext.add name ty1 varContext) body
@@ -60,7 +60,7 @@ let rec extract
             return (e, ty2)
         }
 
-    | LetWithType (name, tyLit, value, body) ->
+    | LetWithType (name, tyLit, value, body, _) ->
         result {
             let! (e1, ty1) = extract funcContext varContext value
             let! (e2, ty2) = extract funcContext (VarContext.add name ty1 varContext) body
@@ -72,7 +72,7 @@ let rec extract
             return (e, ty2)
         }
 
-    | Application (funcName, args) ->
+    | Application (funcName, args, _) ->
         result {
             let! (FuncType (argTypes, retType)) =
                 funcContext
@@ -95,7 +95,7 @@ let rec extract
                 return (equation, retType)
         }
 
-    | Var name ->
+    | Var (name, tyRef, _) ->
         result {
             let! ty =
                 varContext

@@ -1,7 +1,7 @@
-namespace Waxt.UntypedAst
+namespace WAXT.NumType
 
 [<RequireQualifiedAccess>]
-type TypeLiteral =
+type NumType =
     | I32
     | I64
     | F32

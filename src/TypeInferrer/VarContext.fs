@@ -1,6 +1,6 @@
-namespace Waxt.TypeInferrer
+namespace WAXT.TypeInferrer
 
-open Waxt.UntypedAst
+open WAXT.UntypedAst
 
 type VarContext = private VarContext of list<VarName * Type>
 

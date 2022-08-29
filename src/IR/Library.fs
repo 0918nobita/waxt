@@ -1,11 +1,6 @@
-namespace Waxt.IR
+namespace WAXT.IR
 
-[<RequireQualifiedAccess>]
-type IRType =
-    | I32
-    | I64
-    | F32
-    | F64
+open WAXT.NumType
 
 type LocalIndex = LocalIndex of uint
 
@@ -22,6 +17,6 @@ type TypedTerm =
     | Application of FuncIndex * args: list<TypedTerm>
     | Var of LocalIndex
 
-type FuncParams = list<IRType>
+type FuncParams = list<NumType>
 
-type FuncDef = FuncDef of FuncParams * ret: option<IRType> * body: list<TypedTerm>
+type FuncDef = FuncDef of FuncParams * ret: option<NumType> * body: list<TypedTerm>
