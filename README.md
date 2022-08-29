@@ -11,8 +11,8 @@ WAT (WebAssembly Text Format) を少し拡張して、人間にとって書き�
 WAXT :
 
 ```text
-func add_and_store(addr: i32, x: i22, y: i32) {
-    i32.store(addr, x + y)
+export func add_and_store(addr: i32, x: i22, y: i32) {
+    i32_store(addr, x + y)
 }
 ```
 
