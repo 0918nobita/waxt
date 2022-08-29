@@ -1,5 +1,6 @@
 namespace Waxt.UntypedAst
 
+[<RequireQualifiedAccess>]
 type TypeLiteral =
     | I32
     | I64

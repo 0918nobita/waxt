@@ -11,9 +11,9 @@ let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, st
 
     | TypeEquation (ty1, ty2) :: rest when ty1 = ty2 -> unify' rest
 
-    | (TypeEquation (TyVar name, ty)
+    | (TypeEquation (Type.TyVar name, ty)
 
-    | TypeEquation (ty, TyVar name)) :: rest ->
+    | TypeEquation (ty, Type.TyVar name)) :: rest ->
         let frv = Type.freeTypeVars ty
 
         if List.contains name frv then
@@ -24,7 +24,7 @@ let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, st
                 return Assign(name, ty) :: assigns
             }
 
-    | TypeEquation (Func (FuncType (args, ret) as func1), Func (FuncType (args', ret') as func2)) :: rest ->
+    | TypeEquation (Type.Func (FuncType (args, ret) as func1), Type.Func (FuncType (args', ret') as func2)) :: rest ->
         if List.length args <> List.length args' then
             Error $"Arity mismatch: %O{func1} and %O{func2}"
         else

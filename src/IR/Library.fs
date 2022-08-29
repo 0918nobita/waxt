@@ -1,5 +1,6 @@
 namespace Waxt.IR
 
+[<RequireQualifiedAccess>]
 type IRType =
     | I32
     | I64

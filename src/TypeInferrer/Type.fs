@@ -13,6 +13,7 @@ type TyVarName =
 module TyVarName =
     let make name = TyVarName name
 
+[<RequireQualifiedAccess>]
 type Type =
     | I32
     | I64
@@ -42,25 +43,29 @@ and FuncType =
 module Type =
     let fromLiteral (lit: TypeLiteral) =
         match lit with
-        | TypeLiteral.I32 -> I32
-        | TypeLiteral.I64 -> I64
-        | TypeLiteral.F32 -> F32
-        | TypeLiteral.F64 -> F64
+        | TypeLiteral.I32 -> Type.I32
+        | TypeLiteral.I64 -> Type.I64
+        | TypeLiteral.F32 -> Type.F32
+        | TypeLiteral.F64 -> Type.F64
 
     let rec freeTypeVars (ty: Type) =
         match ty with
-        | TyVar name -> [ name ]
-        | Func (FuncType (args, ret)) ->
+        | Type.TyVar name -> [ name ]
+
+        | Type.Func (FuncType (args, ret)) ->
             let args = args |> List.map freeTypeVars |> List.concat
             let ret = freeTypeVars ret
             (args @ ret) |> List.distinct
+
         | _ -> []
 
     let rec assign (tyVarName: TyVarName) (toTy: Type) (ty: Type) =
         match ty with
-        | TyVar name when name = tyVarName -> toTy
-        | Func (FuncType (args, ret)) ->
+        | Type.TyVar name when name = tyVarName -> toTy
+
+        | Type.Func (FuncType (args, ret)) ->
             let args = args |> List.map (assign tyVarName toTy)
             let ret = assign tyVarName toTy ret
-            Func(FuncType(args, ret))
+            Type.Func(FuncType(args, ret))
+
         | _ -> ty

@@ -21,8 +21,8 @@ let Test1 () =
     let fact = FuncName.make "fact"
     let n = VarName.make "n"
 
-    let t0 = TyVar(TyVarName.make "t0")
-    let t1 = TyVar(TyVarName.make "t1")
+    let t0 = Type.TyVar(TyVarName.make "t0")
+    let t1 = Type.TyVar(TyVarName.make "t1")
 
     let funcContext =
         FuncContext.empty
