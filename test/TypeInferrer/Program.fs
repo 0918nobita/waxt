@@ -4,6 +4,7 @@ open NUnit.Framework
 open WAXT.Location
 open WAXT.Type
 open WAXT.TypeInferrer
+open WAXT.TypeInferrer.DerefType
 open WAXT.TypeInferrer.Extract
 open WAXT.TypeInferrer.Unify
 open WAXT.AST
@@ -48,11 +49,10 @@ let Test1 () =
 
     let (simulEquation, ty) = extract funcContext varContext ast |> wantOk
 
-    printfn "%O" simulEquation
-    printfn "%O" ty
-    printfn "%O" ast
+    let assigns = unify simulEquation |> wantOk
 
-    unify simulEquation |> wantOk |> printfn "%A"
+    let dereferenced = derefType assigns ast |> wantOk
+    printfn "%O" dereferenced
 
     Assert.Pass()
 

@@ -4,8 +4,6 @@ open FsToolkit.ErrorHandling
 open WAXT.Type
 open TypeEquation
 
-type Assign = Assign of TyVarName * Type
-
 let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, string> =
     match equations with
     | [] -> Ok []

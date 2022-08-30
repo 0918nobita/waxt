@@ -9,8 +9,11 @@
     <Compile Include="VarContext.fs" />
     <Compile Include="FuncContext.fs" />
     <Compile Include="TypeEquation.fs" />
+    <Compile Include="Error.fs" />
     <Compile Include="Extract.fs" />
+    <Compile Include="Assign.fs" />
     <Compile Include="Unify.fs" />
+    <Compile Include="DerefType.fs" />
   </ItemGroup>
 
   <ItemGroup>
