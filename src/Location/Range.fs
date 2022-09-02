@@ -1,5 +1,7 @@
 namespace WAXT.Location
 
+open Thoth.Json.Net
+
 type Range =
     private
     | Range of start: Pos * end_: Pos
@@ -12,3 +14,5 @@ module Range =
     let make start end_ = Range(start, end_)
 
     let fromPos pos = Range(pos, pos)
+
+    let inline toJson (range: Range) = range |> string |> Encode.string

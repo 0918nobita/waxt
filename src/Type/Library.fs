@@ -1,5 +1,7 @@
 namespace WAXT.Type
 
+open Thoth.Json.Net
+
 type TyVarName =
     private
     | TyVarName of string
@@ -66,3 +68,16 @@ module Type =
             Func(FuncType(args, ret))
 
         | _ -> ty
+
+    let rec toJson (ty: Type) =
+        match ty with
+        | NumType numType ->
+            Encode.object [ "type", Encode.string "numType"
+                            "kind", Encode.string (string numType) ]
+        | TyVar tyVarName ->
+            Encode.object [ "type", Encode.string "tyVar"
+                            "name", Encode.string (string tyVarName) ]
+        | Func (FuncType (args, ret)) ->
+            Encode.object [ "type", Encode.string "funcType"
+                            "args", (args |> List.map toJson |> Encode.list)
+                            "ret", toJson ret ]

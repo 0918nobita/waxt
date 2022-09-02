@@ -1,6 +1,7 @@
 module WAXT.TypeInferrer.Test.Program
 
 open NUnit.Framework
+open Thoth.Json.Net
 open WAXT.Location
 open WAXT.Type
 open WAXT.TypeInferrer
@@ -35,7 +36,7 @@ let Test1 () =
 
     let varContext = VarContext.empty |> VarContext.add n t0
 
-    let ast =
+    let term =
         If(
             I32Eqz(Var(n, ref None, at), at),
             I32Const(1, at),
@@ -47,12 +48,16 @@ let Test1 () =
             at
         )
 
-    let (simulEquation, ty) = extract funcContext varContext ast |> wantOk
+    let (simulEquation, _ty) = extract funcContext varContext term |> wantOk
 
     let assigns = unify simulEquation |> wantOk
 
-    let dereferenced = derefType assigns ast |> wantOk
-    printfn "%O" dereferenced
+    term
+    |> derefType assigns
+    |> wantOk
+    |> DereferencedTerm.toJson
+    |> Encode.toString 2
+    |> printfn "%s"
 
     Assert.Pass()
 

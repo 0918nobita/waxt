@@ -1,5 +1,7 @@
 namespace WAXT.AST
 
+open Thoth.Json.Net
+
 type FuncName =
     private
     | FuncName of string
@@ -10,3 +12,5 @@ type FuncName =
 
 module FuncName =
     let make name = FuncName name
+
+    let toJson (FuncName name) = Encode.string name

@@ -4,3 +4,5 @@ FsUnit
 Microsoft.NET.Test.Sdk
 NUnit
 NUnit3TestAdapter
+Thoth.Json.Net
+Verify.NUnit

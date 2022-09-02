@@ -11,5 +11,4 @@ nuget Thoth.Json.Net ~> 8.0.0
 nuget Microsoft.NET.Test.Sdk ~> 17.3.0
 nuget NUnit ~> 3.13.3
 nuget NUnit3TestAdapter ~> 4.2.1
-nuget Verify ~> 17.10.2
 nuget Verify.NUnit ~> 17.10.2

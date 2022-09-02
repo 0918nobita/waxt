@@ -1,5 +1,7 @@
 namespace WAXT.AST
 
+open Thoth.Json.Net
+
 type VarName =
     private
     | VarName of string
@@ -10,3 +12,5 @@ type VarName =
 
 module VarName =
     let make name = VarName name
+
+    let toJson (VarName name) = Encode.string name
