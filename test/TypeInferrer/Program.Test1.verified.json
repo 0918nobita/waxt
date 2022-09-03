@@ -1,0 +1,60 @@
+﻿{
+  "type": "if",
+  "cond": {
+    "type": "i32Eqz",
+    "term": {
+      "type": "var",
+      "varName": "n",
+      "varType": {
+        "type": "numType",
+        "kind": "i32"
+      },
+      "at": "0:0-0:0"
+    },
+    "at": "0:0-0:0"
+  },
+  "then": {
+    "type": "i32Const",
+    "value": 1,
+    "at": "0:0-0:0"
+  },
+  "else": {
+    "type": "i32Mul",
+    "lhs": {
+      "type": "var",
+      "varName": "n",
+      "varType": {
+        "type": "numType",
+        "kind": "i32"
+      },
+      "at": "0:0-0:0"
+    },
+    "rhs": {
+      "type": "application",
+      "funcName": "fact",
+      "args": [
+        {
+          "type": "i32Sub",
+          "lhs": {
+            "type": "var",
+            "varName": "n",
+            "varType": {
+              "type": "numType",
+              "kind": "i32"
+            },
+            "at": "0:0-0:0"
+          },
+          "rhs": {
+            "type": "i32Const",
+            "value": 1,
+            "at": "0:0-0:0"
+          },
+          "at": "0:0-0:0"
+        }
+      ],
+      "at": "0:0-0:0"
+    },
+    "at": "0:0-0:0"
+  },
+  "at": "0:0-0:0"
+}

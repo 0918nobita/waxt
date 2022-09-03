@@ -2,6 +2,8 @@ module WAXT.TypeInferrer.Test.Program
 
 open NUnit.Framework
 open Thoth.Json.Net
+open VerifyNUnit
+open VerifyTests
 open WAXT.Location
 open WAXT.Type
 open WAXT.TypeInferrer
@@ -52,14 +54,20 @@ let Test1 () =
 
     let assigns = unify simulEquation |> wantOk
 
-    term
-    |> derefType assigns
-    |> wantOk
-    |> DereferencedTerm.toJson
-    |> Encode.toString 2
-    |> printfn "%s"
+    let dereferenced =
+        term
+        |> derefType assigns
+        |> wantOk
+        |> DereferencedTerm.toJson
+        |> Encode.toString 2
 
-    Assert.Pass()
+    let settings = VerifySettings()
+    settings.UseExtension("json")
+
+    task {
+        let! _ = Verifier.Verify(dereferenced, settings)
+        return ()
+    }
 
 [<EntryPoint>]
 let main _ = 0
