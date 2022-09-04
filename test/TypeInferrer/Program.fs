@@ -1,6 +1,7 @@
 module WAXT.TypeInferrer.Test.Program
 
 open NUnit.Framework
+open WAXT.AST
 open WAXT.Location
 open WAXT.TestUtil
 open WAXT.Token
@@ -9,7 +10,6 @@ open WAXT.TypeInferrer
 open WAXT.TypeInferrer.DerefType
 open WAXT.TypeInferrer.Extract
 open WAXT.TypeInferrer.Unify
-open WAXT.AST
 
 [<Test>]
 let Test1 () =
@@ -51,13 +51,9 @@ let Test1 () =
 
     let assigns = unify simulEquation |> wantOk
 
-    let dereferenced =
-        term
-        |> derefType assigns
-        |> wantOk
-        |> DereferencedTerm.toJSON
+    let dereferenced = term |> derefType assigns |> wantOk
 
-    SnapshotTest.VerifyJSON dereferenced
+    SnapshotTest.VerifyJSON(dereferenced.toJSON ())
 
 [<EntryPoint>]
 let main _ = 0

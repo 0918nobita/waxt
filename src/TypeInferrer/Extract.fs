@@ -4,6 +4,7 @@ open FsToolkit.ErrorHandling
 open TypeEquation
 open WAXT.AST
 open WAXT.Location
+open WAXT.Token
 open WAXT.Type
 
 let private typeLiteralToType (typeLiteral: TypeLiteral) =
@@ -32,9 +33,9 @@ let rec extract
             return (equation, NumType NumType.I32)
         }
 
-    | I32Add (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
-    | I32Sub (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
-    | I32Mul (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
+    | I32Add (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs (I32AddOp.locate op) rhs
+    | I32Sub (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs (I32SubOp.locate op) rhs
+    | I32Mul (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs (I32MulOp.locate op) rhs
 
     | If (IfExpr (if_, cond, thenClause, elseClause)) ->
         result {
@@ -45,7 +46,7 @@ let rec extract
             let e =
                 TypeSimulEquation.combine e1 e2
                 |> TypeSimulEquation.combine e3
-                |> TypeSimulEquation.addEquation ty2 ty3 ((if_ :> ILocatable).Locate())
+                |> TypeSimulEquation.addEquation ty2 ty3 (if_ |> IfKeyword.locate)
 
             return (e, ty2)
         }

@@ -8,7 +8,6 @@
   <ItemGroup>
     <Compile Include="Pos.fs" />
     <Compile Include="Range.fs" />
-    <Compile Include="Locatable.fs" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

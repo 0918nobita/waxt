@@ -10,6 +10,7 @@
     <Compile Include="FuncName.fs" />
     <Compile Include="TypeLiteral.fs" />
     <Compile Include="Term.fs" />
+    <Compile Include="TermExt.fs" />
   </ItemGroup>
 
   <ItemGroup>
