@@ -35,12 +35,23 @@ let rec derefType (assigns: list<Assign>) (term: MutableTerm) : Result<Dereferen
             return I32Mul(lhs, opLoc, rhs)
         }
 
-    | If (cond, thenClause, elseClause, at) ->
+    | If (IfExpr (if_, cond, thenClause, elseClause)) ->
         result {
             let! cond = derefType assigns cond
-            let! thenClause = derefType assigns thenClause
-            let! elseClause = derefType assigns elseClause
-            return If(cond, thenClause, elseClause, at)
+            let! thenClauseBody = derefType assigns thenClause.Body
+            let! elseClauseBody = derefType assigns elseClause.Body
+
+            return
+                If(
+                    IfExpr(
+                        if_,
+                        cond,
+                        {| thenClause with
+                            Body = thenClauseBody |},
+                        {| elseClause with
+                            Body = elseClauseBody |}
+                    )
+                )
         }
 
     | Let (varName, boundValue, body, at) ->

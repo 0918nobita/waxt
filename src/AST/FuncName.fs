@@ -13,4 +13,4 @@ type FuncName =
 module FuncName =
     let make name = FuncName name
 
-    let toJson (FuncName name) = Encode.string name
+    let toJSON (FuncName name) = Encode.string name

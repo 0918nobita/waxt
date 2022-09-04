@@ -36,16 +36,16 @@ let rec extract
     | I32Sub (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
     | I32Mul (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
 
-    | If (cond, thenClause, elseClause, at) ->
+    | If (IfExpr (if_, cond, thenClause, elseClause)) ->
         result {
             let! (e1, _) = extract funcContext varContext cond
-            let! (e2, ty2) = extract funcContext varContext thenClause
-            let! (e3, ty3) = extract funcContext varContext elseClause
+            let! (e2, ty2) = extract funcContext varContext thenClause.Body
+            let! (e3, ty3) = extract funcContext varContext elseClause.Body
 
             let e =
                 TypeSimulEquation.combine e1 e2
                 |> TypeSimulEquation.combine e3
-                |> TypeSimulEquation.addEquation ty2 ty3 at
+                |> TypeSimulEquation.addEquation ty2 ty3 ((if_ :> ILocatable).Locate())
 
             return (e, ty2)
         }

@@ -19,4 +19,4 @@ module Range =
 #if !DEBUG
     inline
 #endif
-        toJson (range: Range) = range |> string |> Encode.string
+        toJSON (range: Range) = range |> string |> Encode.string

@@ -17,4 +17,4 @@ type TypeLiteral =
         | F64 -> "f64"
 
 module TypeLiteral =
-    let inline toJson (typeLiteral: TypeLiteral) = typeLiteral |> string |> Encode.string
+    let inline toJSON (typeLiteral: TypeLiteral) = typeLiteral |> string |> Encode.string

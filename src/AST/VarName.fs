@@ -13,4 +13,4 @@ type VarName =
 module VarName =
     let make name = VarName name
 
-    let toJson (VarName name) = Encode.string name
+    let toJSON (VarName name) = Encode.string name

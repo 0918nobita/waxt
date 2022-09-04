@@ -1,5 +1,6 @@
 ﻿{
   "type": "if",
+  "if": "1:1-1:1",
   "cond": {
     "type": "i32Eqz",
     "term": {
@@ -14,47 +15,54 @@
     "at": "1:1-1:1"
   },
   "then": {
-    "type": "i32Const",
-    "value": 1,
-    "at": "1:1-1:1"
-  },
-  "else": {
-    "type": "i32Mul",
-    "lhs": {
-      "type": "var",
-      "varName": "n",
-      "varType": {
-        "type": "numType",
-        "kind": "i32"
-      },
+    "openBrace": "1:1-1:1",
+    "body": {
+      "type": "i32Const",
+      "value": 1,
       "at": "1:1-1:1"
     },
-    "op": "1:1-1:1",
-    "rhs": {
-      "type": "application",
-      "funcName": "fact",
-      "args": [
-        {
-          "type": "i32Sub",
-          "lhs": {
-            "type": "var",
-            "varName": "n",
-            "varType": {
-              "type": "numType",
-              "kind": "i32"
-            },
-            "at": "1:1-1:1"
-          },
-          "op": "1:1-1:1",
-          "rhs": {
-            "type": "i32Const",
-            "value": 1,
-            "at": "1:1-1:1"
-          }
-        }
-      ],
-      "at": "1:1-1:1"
-    }
+    "closeBrace": "1:1-1:1"
   },
-  "at": "1:1-1:1"
+  "else": {
+    "openBrace": "1:1-1:1",
+    "body": {
+      "type": "i32Mul",
+      "lhs": {
+        "type": "var",
+        "varName": "n",
+        "varType": {
+          "type": "numType",
+          "kind": "i32"
+        },
+        "at": "1:1-1:1"
+      },
+      "op": "1:1-1:1",
+      "rhs": {
+        "type": "application",
+        "funcName": "fact",
+        "args": [
+          {
+            "type": "i32Sub",
+            "lhs": {
+              "type": "var",
+              "varName": "n",
+              "varType": {
+                "type": "numType",
+                "kind": "i32"
+              },
+              "at": "1:1-1:1"
+            },
+            "op": "1:1-1:1",
+            "rhs": {
+              "type": "i32Const",
+              "value": 1,
+              "at": "1:1-1:1"
+            }
+          }
+        ],
+        "at": "1:1-1:1"
+      }
+    },
+    "closeBrace": "1:1-1:1"
+  }
 }

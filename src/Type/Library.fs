@@ -69,7 +69,7 @@ module Type =
 
         | _ -> ty
 
-    let rec toJson (ty: Type) =
+    let rec toJSON (ty: Type) =
         match ty with
         | NumType numType ->
             Encode.object [ "type", Encode.string "numType"
@@ -79,5 +79,5 @@ module Type =
                             "name", Encode.string (string tyVarName) ]
         | Func (FuncType (args, ret)) ->
             Encode.object [ "type", Encode.string "funcType"
-                            "args", (args |> List.map toJson |> Encode.list)
-                            "ret", toJson ret ]
+                            "args", (args |> List.map toJSON |> Encode.list)
+                            "ret", toJSON ret ]

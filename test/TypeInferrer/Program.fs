@@ -13,7 +13,8 @@ open WAXT.AST
 
 [<Test>]
 let Test1 () =
-    let at = Range.fromPos Pos.origin
+    let pos = Pos.origin
+    let at = Range.fromPos pos
 
     let fact = FuncName.make "fact"
     let n = VarName.make "n"
@@ -29,14 +30,21 @@ let Test1 () =
 
     let term =
         If(
-            I32Eqz(Var(n, ref None, at), at),
-            I32Const(1, at),
-            I32Mul(
-                Var(n, ref None, at),
-                I32MulOp Pos.origin,
-                Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp Pos.origin, I32Const(1, at)) ], at)
-            ),
-            at
+            IfExpr(
+                IfKeyword at,
+                I32Eqz(Var(n, ref None, at), at),
+                {| OpenBrace = OpenBrace pos
+                   Body = I32Const(1, at)
+                   CloseBrace = CloseBrace pos |},
+                {| OpenBrace = OpenBrace pos
+                   Body =
+                    I32Mul(
+                        Var(n, ref None, at),
+                        I32MulOp pos,
+                        Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
+                    )
+                   CloseBrace = CloseBrace pos |}
+            )
         )
 
     let (simulEquation, _ty) = extract funcContext varContext term |> wantOk
@@ -47,7 +55,7 @@ let Test1 () =
         term
         |> derefType assigns
         |> wantOk
-        |> DereferencedTerm.toJson
+        |> DereferencedTerm.toJSON
 
     SnapshotTest.VerifyJSON dereferenced
 
