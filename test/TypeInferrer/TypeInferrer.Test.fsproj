@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TypeInferrer\TypeInferrer.fsproj" />
+    <ProjectReference Include="..\TestUtil\TestUtil.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

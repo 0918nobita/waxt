@@ -1,26 +1,14 @@
 module WAXT.TypeInferrer.Test.Program
 
 open NUnit.Framework
-open Thoth.Json.Net
-open VerifyNUnit
-open VerifyTests
 open WAXT.Location
+open WAXT.TestUtil
 open WAXT.Type
 open WAXT.TypeInferrer
 open WAXT.TypeInferrer.DerefType
 open WAXT.TypeInferrer.Extract
 open WAXT.TypeInferrer.Unify
 open WAXT.AST
-
-[<SetUp>]
-let Setup () = ()
-
-let wantOk (res: Result<'a, 'b>) : 'a =
-    match res with
-    | Ok value -> value
-    | Error _ ->
-        Assert.Fail "Expected Ok"
-        failwith "unreachable"
 
 [<Test>]
 let Test1 () =
@@ -59,15 +47,8 @@ let Test1 () =
         |> derefType assigns
         |> wantOk
         |> DereferencedTerm.toJson
-        |> Encode.toString 2
 
-    let settings = VerifySettings()
-    settings.UseExtension("json")
-
-    task {
-        let! _ = Verifier.Verify(dereferenced, settings)
-        return ()
-    }
+    SnapshotTest.VerifyJSON dereferenced
 
 [<EntryPoint>]
 let main _ = 0
