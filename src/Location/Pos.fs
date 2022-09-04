@@ -6,7 +6,10 @@ type Pos =
 
     override this.ToString() =
         match this with
-        | Pos (line, column) -> $"%i{line}:%i{column}"
+        | Pos (line, column) ->
+            let line = line + 1
+            let column = column + 1
+            $"%i{line}:%i{column}"
 
 module Pos =
     let make line column = Pos(line, column)

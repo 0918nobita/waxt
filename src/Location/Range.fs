@@ -15,4 +15,8 @@ module Range =
 
     let fromPos pos = Range(pos, pos)
 
-    let inline toJson (range: Range) = range |> string |> Encode.string
+    let
+#if !DEBUG
+    inline
+#endif
+        toJson (range: Range) = range |> string |> Encode.string
