@@ -2,18 +2,25 @@ namespace WAXT.AST
 
 open Thoth.Json.Net
 open WAXT.Location
+open WAXT.Token
 open WAXT.Type
 
 type Term<'Ty> =
     | I32Const of n: int * at: Range
+
     | I32Eqz of Term<'Ty> * at: Range
-    | I32Add of lhs: Term<'Ty> * rhs: Term<'Ty> * at: Range
-    | I32Sub of lhs: Term<'Ty> * rhs: Term<'Ty> * at: Range
-    | I32Mul of lhs: Term<'Ty> * rhs: Term<'Ty> * at: Range
+
+    | I32Add of lhs: Term<'Ty> * op: I32AddOp * rhs: Term<'Ty>
+    | I32Sub of lhs: Term<'Ty> * op: I32SubOp * rhs: Term<'Ty>
+    | I32Mul of lhs: Term<'Ty> * op: I32MulOp * rhs: Term<'Ty>
+
     | If of cond: Term<'Ty> * thenClause: Term<'Ty> * elseClause: Term<'Ty> * at: Range
+
     | Let of VarName * boundValue: Term<'Ty> * body: Term<'Ty> * at: Range
     | LetWithType of VarName * TypeLiteral * value: Term<'Ty> * body: Term<'Ty> * at: Range
+
     | Application of FuncName * args: list<Term<'Ty>> * at: Range
+
     | Var of VarName * ty: 'Ty * at: Range
 
 type MutableTerm = Term<ref<option<Type>>>
@@ -33,23 +40,23 @@ module DereferencedTerm =
                             "term", toJson term
                             "at", Range.toJson at ]
 
-        | I32Add (lhs, rhs, at) ->
+        | I32Add (lhs, op, rhs) ->
             Encode.object [ "type", Encode.string "i32Add"
                             "lhs", toJson lhs
-                            "rhs", toJson rhs
-                            "at", Range.toJson at ]
+                            "op", (op :> ILocatable).Locate() |> Range.toJson
+                            "rhs", toJson rhs ]
 
-        | I32Sub (lhs, rhs, at) ->
+        | I32Sub (lhs, op, rhs) ->
             Encode.object [ "type", Encode.string "i32Sub"
                             "lhs", toJson lhs
-                            "rhs", toJson rhs
-                            "at", Range.toJson at ]
+                            "op", (op :> ILocatable).Locate() |> Range.toJson
+                            "rhs", toJson rhs ]
 
-        | I32Mul (lhs, rhs, at) ->
+        | I32Mul (lhs, op, rhs) ->
             Encode.object [ "type", Encode.string "i32Mul"
                             "lhs", toJson lhs
-                            "rhs", toJson rhs
-                            "at", Range.toJson at ]
+                            "op", (op :> ILocatable).Locate() |> Range.toJson
+                            "rhs", toJson rhs ]
 
         | If (cond, thenClause, elseClause, at) ->
             Encode.object [ "type", Encode.string "if"

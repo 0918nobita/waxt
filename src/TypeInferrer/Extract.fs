@@ -3,6 +3,7 @@ module WAXT.TypeInferrer.Extract
 open FsToolkit.ErrorHandling
 open TypeEquation
 open WAXT.AST
+open WAXT.Location
 open WAXT.Type
 
 let private typeLiteralToType (typeLiteral: TypeLiteral) =
@@ -31,20 +32,9 @@ let rec extract
             return (equation, NumType NumType.I32)
         }
 
-    | I32Add (lhs, rhs, at)
-    | I32Sub (lhs, rhs, at)
-    | I32Mul (lhs, rhs, at) ->
-        result {
-            let! (e1, ty1) = extract funcContext varContext lhs
-            let! (e2, ty2) = extract funcContext varContext rhs
-
-            let e3 =
-                TypeSimulEquation.combine e1 e2
-                |> TypeSimulEquation.addEquation ty1 (NumType NumType.I32) at
-                |> TypeSimulEquation.addEquation ty2 (NumType NumType.I32) at
-
-            return (e3, NumType NumType.I32)
-        }
+    | I32Add (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
+    | I32Sub (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
+    | I32Mul (lhs, op, rhs) -> extractFromBinExpr funcContext varContext lhs ((op :> ILocatable).Locate()) rhs
 
     | If (cond, thenClause, elseClause, at) ->
         result {
@@ -114,3 +104,22 @@ let rec extract
 
             return (TypeSimulEquation.empty, ty)
         }
+
+and private extractFromBinExpr
+    (funcContext: FuncContext)
+    (varContext: VarContext)
+    (lhs: MutableTerm)
+    (opLoc: Range)
+    (rhs: MutableTerm)
+    =
+    result {
+        let! (e1, ty1) = extract funcContext varContext lhs
+        let! (e2, ty2) = extract funcContext varContext rhs
+
+        let e3 =
+            TypeSimulEquation.combine e1 e2
+            |> TypeSimulEquation.addEquation ty1 (NumType NumType.I32) opLoc
+            |> TypeSimulEquation.addEquation ty2 (NumType NumType.I32) opLoc
+
+        return (e3, NumType NumType.I32)
+    }

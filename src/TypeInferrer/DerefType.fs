@@ -14,25 +14,25 @@ let rec derefType (assigns: list<Assign>) (term: MutableTerm) : Result<Dereferen
             return I32Eqz(t, at)
         }
 
-    | I32Add (lhs, rhs, at) ->
+    | I32Add (lhs, opLoc, rhs) ->
         result {
             let! lhs = derefType assigns lhs
             let! rhs = derefType assigns rhs
-            return I32Add(lhs, rhs, at)
+            return I32Add(lhs, opLoc, rhs)
         }
 
-    | I32Sub (lhs, rhs, at) ->
+    | I32Sub (lhs, opLoc, rhs) ->
         result {
             let! lhs = derefType assigns lhs
             let! rhs = derefType assigns rhs
-            return I32Sub(lhs, rhs, at)
+            return I32Sub(lhs, opLoc, rhs)
         }
 
-    | I32Mul (lhs, rhs, at) ->
+    | I32Mul (lhs, opLoc, rhs) ->
         result {
             let! lhs = derefType assigns lhs
             let! rhs = derefType assigns rhs
-            return I32Mul(lhs, rhs, at)
+            return I32Mul(lhs, opLoc, rhs)
         }
 
     | If (cond, thenClause, elseClause, at) ->

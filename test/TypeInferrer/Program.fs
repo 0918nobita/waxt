@@ -3,6 +3,7 @@ module WAXT.TypeInferrer.Test.Program
 open NUnit.Framework
 open WAXT.Location
 open WAXT.TestUtil
+open WAXT.Token
 open WAXT.Type
 open WAXT.TypeInferrer
 open WAXT.TypeInferrer.DerefType
@@ -32,8 +33,8 @@ let Test1 () =
             I32Const(1, at),
             I32Mul(
                 Var(n, ref None, at),
-                Application(fact, [ I32Sub(Var(n, ref None, at), I32Const(1, at), at) ], at),
-                at
+                I32MulOp Pos.origin,
+                Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp Pos.origin, I32Const(1, at)) ], at)
             ),
             at
         )

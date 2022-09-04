@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Location\Location.fsproj" />
+    <ProjectReference Include="..\Token\Token.fsproj" />
     <ProjectReference Include="..\Type\Type.fsproj" />
   </ItemGroup>
 
