@@ -67,7 +67,8 @@ dotnet test
 
 ```mermaid
 graph TB
-  AST-->Location
+  Token-->Location
+  AST-->Token
   AST-->Type
   IR-->Location
   IR-->Type
