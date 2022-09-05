@@ -1,6 +1,6 @@
-namespace WAXT.IR
+namespace Waxt.Ir
 
-open WAXT.Type
+open Waxt.Type
 
 type LocalIndex = LocalIndex of uint
 

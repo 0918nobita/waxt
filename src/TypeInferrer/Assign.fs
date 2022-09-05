@@ -1,5 +1,5 @@
-namespace WAXT.TypeInferrer
+namespace Waxt.TypeInferrer
 
-open WAXT.Type
+open Waxt.Type
 
 type Assign = Assign of TyVarName * Type

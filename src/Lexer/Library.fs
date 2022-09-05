@@ -1,1 +1,1 @@
-module WAXT.Lexer
+module Waxt.Lexer

@@ -2,16 +2,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>WAXT.AST</AssemblyName>
+    <AssemblyName>Waxt.Ast</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="VarName.fs"/>
     <Compile Include="FuncName.fs" />
     <Compile Include="TypeLiteral.fs" />
-    <Compile Include="Term.fs" />
-    <Compile Include="TermExt.fs" />
-    <Compile Include="IfExprExt.fs" />
+    <Compile Include="Expr.fs" />
+    <Compile Include="Block.fs" />
+    <Compile Include="IfExpr.fs" />
+    <Compile Include="ExprExt.fs" />
   </ItemGroup>
 
   <ItemGroup>

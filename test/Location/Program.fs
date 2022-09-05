@@ -1,7 +1,7 @@
-module WAXT.Location.Test.Program
+module Waxt.Location.Test.Program
 
 open NUnit.Framework
-open WAXT.Location
+open Waxt.Location
 
 [<Test>]
 let Test1 () =

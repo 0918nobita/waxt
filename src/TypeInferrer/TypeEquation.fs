@@ -1,9 +1,9 @@
-module WAXT.TypeInferrer.TypeEquation
+module Waxt.TypeInferrer.TypeEquation
 
 open System
 open System.Collections
-open WAXT.Location
-open WAXT.Type
+open Waxt.Location
+open Waxt.Type
 
 [<CustomEquality; CustomComparison>]
 type TypeEquation =
@@ -61,7 +61,7 @@ type TypeSimulEquation =
 module TypeSimulEquation =
     let empty = TypeSimulEquation Set.empty
 
-    let addEquation (lhs: Type) (rhs: Type) (at: Range) (TypeSimulEquation equationSet) =
+    let add (lhs: Type) (rhs: Type) (at: Range) (TypeSimulEquation equationSet) =
         TypeSimulEquation(Set.add (TypeEquation(lhs, rhs, at)) equationSet)
 
     let combine (TypeSimulEquation a) (TypeSimulEquation b) = TypeSimulEquation(Set.union a b)

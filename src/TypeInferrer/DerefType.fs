@@ -1,11 +1,11 @@
-module WAXT.TypeInferrer.DerefType
+module Waxt.TypeInferrer.DerefType
 
 open FsToolkit.ErrorHandling
-open WAXT.AST
-open WAXT.Type
+open Waxt.Ast
+open Waxt.Type
 
-let rec derefType (assigns: list<Assign>) (term: MutableTerm) : Result<DereferencedTerm, list<TypeInferenceError>> =
-    match term with
+let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr, list<TypeInferenceError>> =
+    match expr with
     | I32Const (n, at) -> Ok(I32Const(n, at))
 
     | I32Eqz (t, at) ->
@@ -38,20 +38,10 @@ let rec derefType (assigns: list<Assign>) (term: MutableTerm) : Result<Dereferen
     | If (IfExpr (if_, cond, thenClause, elseClause)) ->
         result {
             let! cond = derefType assigns cond
-            let! thenClauseBody = derefType assigns thenClause.Body
-            let! elseClauseBody = derefType assigns elseClause.Body
+            let! thenClause = derefTypeInBlock assigns thenClause
+            let! elseClause = derefTypeInBlock assigns elseClause
 
-            return
-                If(
-                    IfExpr(
-                        if_,
-                        cond,
-                        {| thenClause with
-                            Body = thenClauseBody |},
-                        {| elseClause with
-                            Body = elseClauseBody |}
-                    )
-                )
+            return If(IfExpr(if_, cond, thenClause, elseClause))
         }
 
     | Let (varName, boundValue, body, at) ->
@@ -96,3 +86,15 @@ let rec derefType (assigns: list<Assign>) (term: MutableTerm) : Result<Dereferen
 
             return Var(varName, ty, at)
         }
+
+and private derefTypeInBlock (assigns: list<Assign>) ((Block (openBrace, (body, last), closeBrace)): MutableBlock) =
+    result {
+        let! body =
+            body
+            |> List.map (derefType assigns)
+            |> List.sequenceResultA
+            |> Result.mapError List.concat
+
+        let! last = derefType assigns last
+        return Block(openBrace, (body, last), closeBrace)
+    }

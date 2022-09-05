@@ -9,4 +9,4 @@ dotnet reportgenerator \
     -reports:test/**/TestResults/*/coverage.cobertura.xml \
     -targetdir:coverage \
     -reporttypes:Html \
-    -assemblyfilters:-WAXT.TestUtil
+    -assemblyfilters:-Waxt.TestUtil

@@ -1,15 +1,16 @@
-module WAXT.TypeInferrer.Test.Program
+module Waxt.TypeInferrer.Test.Program
 
 open NUnit.Framework
-open WAXT.AST
-open WAXT.Location
-open WAXT.TestUtil
-open WAXT.Token
-open WAXT.Type
-open WAXT.TypeInferrer
-open WAXT.TypeInferrer.DerefType
-open WAXT.TypeInferrer.Extract
-open WAXT.TypeInferrer.Unify
+open Waxt.Ast
+open Waxt.Ast.ExprExt
+open Waxt.Location
+open Waxt.TestUtil
+open Waxt.Token
+open Waxt.Type
+open Waxt.TypeInferrer
+open Waxt.TypeInferrer.DerefType
+open Waxt.TypeInferrer.Extract
+open Waxt.TypeInferrer.Unify
 
 [<Test>]
 let Test1 () =
@@ -28,32 +29,32 @@ let Test1 () =
 
     let varContext = VarContext.empty |> VarContext.add n t0
 
-    let term =
+    let expr =
         If(
             IfExpr(
                 IfKeyword at,
                 I32Eqz(Var(n, ref None, at), at),
-                {| OpenBrace = OpenBrace pos
-                   Body = I32Const(1, at)
-                   CloseBrace = CloseBrace pos |},
-                {| OpenBrace = OpenBrace pos
-                   Body =
-                    I32Mul(
-                        Var(n, ref None, at),
-                        I32MulOp pos,
-                        Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
-                    )
-                   CloseBrace = CloseBrace pos |}
+                Block(OpenBrace pos, ([], I32Const(1, at)), CloseBrace pos),
+                Block(
+                    OpenBrace pos,
+                    ([],
+                     I32Mul(
+                         Var(n, ref None, at),
+                         I32MulOp pos,
+                         Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
+                     )),
+                    CloseBrace pos
+                )
             )
         )
 
-    let (simulEquation, _ty) = extract funcContext varContext term |> wantOk
+    let (simulEquation, _ty) = extract funcContext varContext expr |> wantOk
 
     let assigns = unify simulEquation |> wantOk
 
-    let dereferenced = term |> derefType assigns |> wantOk
+    let dereferenced = expr |> derefType assigns |> wantOk
 
-    SnapshotTest.VerifyJSON(dereferenced.toJSON ())
+    SnapshotTest.VerifyJSON(encodeExpr dereferenced)
 
 [<EntryPoint>]
 let main _ = 0

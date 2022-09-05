@@ -1,6 +1,6 @@
-namespace WAXT.Token
+namespace Waxt.Token
 
-open WAXT.Location
+open Waxt.Location
 
 type IfKeyword = IfKeyword of Range
 

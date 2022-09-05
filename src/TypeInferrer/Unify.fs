@@ -1,7 +1,7 @@
-module WAXT.TypeInferrer.Unify
+module Waxt.TypeInferrer.Unify
 
 open FsToolkit.ErrorHandling
-open WAXT.Type
+open Waxt.Type
 open TypeEquation
 
 let rec private unify' (equations: list<TypeEquation>) : Result<list<Assign>, string> =

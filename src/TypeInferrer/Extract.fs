@@ -1,11 +1,12 @@
-module WAXT.TypeInferrer.Extract
+module Waxt.TypeInferrer.Extract
 
 open FsToolkit.ErrorHandling
 open TypeEquation
-open WAXT.AST
-open WAXT.Location
-open WAXT.Token
-open WAXT.Type
+open Waxt.Ast
+open Waxt.Ast.ExprExt
+open Waxt.Location
+open Waxt.Token
+open Waxt.Type
 
 let private typeLiteralToType (typeLiteral: TypeLiteral) =
     match typeLiteral with
@@ -17,9 +18,9 @@ let private typeLiteralToType (typeLiteral: TypeLiteral) =
 let rec extract
     (funcContext: FuncContext)
     (varContext: VarContext)
-    (term: MutableTerm)
-    : Result<TypeSimulEquation * Type, string> =
-    match term with
+    (expr: MutableExpr)
+    : Result<TypeSimulEquation * Type, list<string>> =
+    match expr with
     | I32Const _ -> Ok(TypeSimulEquation.empty, NumType NumType.I32)
 
     | I32Eqz (t, at) ->
@@ -28,7 +29,7 @@ let rec extract
 
             let equation =
                 equation
-                |> TypeSimulEquation.addEquation ty (NumType NumType.I32) at
+                |> TypeSimulEquation.add ty (NumType NumType.I32) at
 
             return (equation, NumType NumType.I32)
         }
@@ -40,13 +41,13 @@ let rec extract
     | If (IfExpr (if_, cond, thenClause, elseClause)) ->
         result {
             let! (e1, _) = extract funcContext varContext cond
-            let! (e2, ty2) = extract funcContext varContext thenClause.Body
-            let! (e3, ty3) = extract funcContext varContext elseClause.Body
+            let! (e2, ty2) = extractFromBlock funcContext varContext thenClause
+            let! (e3, ty3) = extractFromBlock funcContext varContext elseClause
 
             let e =
                 TypeSimulEquation.combine e1 e2
                 |> TypeSimulEquation.combine e3
-                |> TypeSimulEquation.addEquation ty2 ty3 (if_ |> IfKeyword.locate)
+                |> TypeSimulEquation.add ty2 ty3 (IfKeyword.locate if_)
 
             return (e, ty2)
         }
@@ -66,7 +67,7 @@ let rec extract
 
             let e =
                 TypeSimulEquation.combine e1 e2
-                |> TypeSimulEquation.addEquation ty1 (typeLiteralToType tyLit) at
+                |> TypeSimulEquation.add ty1 (typeLiteralToType tyLit) at
 
             return (e, ty2)
         }
@@ -76,7 +77,7 @@ let rec extract
             let! (FuncType (argTypes, retType)) =
                 funcContext
                 |> FuncContext.tryFind funcName
-                |> Result.requireSome $"%O{funcName} is not defined"
+                |> Result.requireSome [ $"%O{funcName} is not defined" ]
 
             let! args =
                 args
@@ -84,11 +85,11 @@ let rec extract
                 |> List.sequenceResultM
 
             if List.length args <> List.length argTypes then
-                return! Error "Arity mismatch"
+                return! Error [ "Arity mismatch" ]
             else
                 let equation =
                     (args
-                     |> List.mapi (fun i (e, ty) -> TypeSimulEquation.addEquation ty argTypes.[i] at e))
+                     |> List.mapi (fun i (e, ty) -> TypeSimulEquation.add ty argTypes.[i] at e))
                     |> TypeSimulEquation.combineMany
 
                 return (equation, retType)
@@ -99,7 +100,7 @@ let rec extract
             let! ty =
                 varContext
                 |> VarContext.tryFind name
-                |> Result.requireSome $"%O{name} is not defined"
+                |> Result.requireSome [ $"%O{name} is not defined" ]
 
             tyRef.Value <- Some ty
 
@@ -109,9 +110,9 @@ let rec extract
 and private extractFromBinExpr
     (funcContext: FuncContext)
     (varContext: VarContext)
-    (lhs: MutableTerm)
+    (lhs: MutableExpr)
     (opLoc: Range)
-    (rhs: MutableTerm)
+    (rhs: MutableExpr)
     =
     result {
         let! (e1, ty1) = extract funcContext varContext lhs
@@ -119,8 +120,32 @@ and private extractFromBinExpr
 
         let e3 =
             TypeSimulEquation.combine e1 e2
-            |> TypeSimulEquation.addEquation ty1 (NumType NumType.I32) opLoc
-            |> TypeSimulEquation.addEquation ty2 (NumType NumType.I32) opLoc
+            |> TypeSimulEquation.add ty1 (NumType NumType.I32) opLoc
+            |> TypeSimulEquation.add ty2 (NumType NumType.I32) opLoc
 
         return (e3, NumType NumType.I32)
+    }
+
+and private extractFromBlock
+    (funcContext: FuncContext)
+    (varContext: VarContext)
+    ((Block (_, (body, last), _)): MutableBlock)
+    =
+    result {
+        let! e =
+            body
+            |> List.map (fun expr ->
+                result {
+                    let! (e, ty) = extract funcContext varContext expr
+
+                    return
+                        e
+                        |> TypeSimulEquation.add ty Void (expr.locate ())
+                })
+            |> List.sequenceResultA
+            |> Result.map TypeSimulEquation.combineMany
+            |> Result.mapError List.concat
+
+        let! (e', ty) = extract funcContext varContext last
+        return (TypeSimulEquation.combine e e', ty)
     }

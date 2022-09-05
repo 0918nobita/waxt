@@ -1,5 +1,5 @@
-namespace WAXT.TypeInferrer
+namespace Waxt.TypeInferrer
 
-open WAXT.Location
+open Waxt.Location
 
 type TypeInferenceError = TypeInferenceError of msg: string * at: Range

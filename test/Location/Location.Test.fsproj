@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <RootNamespace>WAXT.Location.Test</RootNamespace>
+    <RootNamespace>Waxt.Location.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

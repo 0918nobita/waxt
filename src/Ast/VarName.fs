@@ -1,4 +1,4 @@
-namespace WAXT.AST
+namespace Waxt.Ast
 
 open Thoth.Json.Net
 

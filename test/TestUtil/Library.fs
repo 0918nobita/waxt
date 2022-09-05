@@ -1,4 +1,4 @@
-module WAXT.TestUtil
+module Waxt.TestUtil
 
 open NUnit.Framework
 open System.Runtime.CompilerServices

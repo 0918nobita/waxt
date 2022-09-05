@@ -1,24 +1,18 @@
-namespace WAXT.Token
+namespace Waxt.Token
 
-open WAXT.Location
+open Waxt.Location
 
-type I32AddOp =
-    | I32AddOp of Pos
+type I32AddOp = I32AddOp of Pos
 
 module I32AddOp =
-    let locate (I32AddOp pos) =
-        Range.fromPos pos
+    let locate (I32AddOp pos) = Range.fromPos pos
 
-type I32SubOp =
-    | I32SubOp of Pos
+type I32SubOp = I32SubOp of Pos
 
 module I32SubOp =
-    let locate (I32SubOp pos) =
-        Range.fromPos pos
+    let locate (I32SubOp pos) = Range.fromPos pos
 
-type I32MulOp =
-    | I32MulOp of Pos
+type I32MulOp = I32MulOp of Pos
 
 module I32MulOp =
-    let locate (I32MulOp pos) =
-        Range.fromPos pos
+    let locate (I32MulOp pos) = Range.fromPos pos

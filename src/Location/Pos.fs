@@ -1,4 +1,4 @@
-namespace WAXT.Location
+namespace Waxt.Location
 
 type Pos =
     private

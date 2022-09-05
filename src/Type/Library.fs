@@ -1,4 +1,4 @@
-namespace WAXT.Type
+namespace Waxt.Type
 
 open Thoth.Json.Net
 
@@ -14,12 +14,14 @@ module TyVarName =
     let make name = TyVarName name
 
 type Type =
+    | Void
     | NumType of NumType
     | TyVar of TyVarName
     | Func of FuncType
 
     override this.ToString() =
         match this with
+        | Void -> "void"
         | NumType numType -> $"%O{numType}"
         | TyVar name -> $"%O{name}"
         | Func funcType -> $"%O{funcType}"
@@ -71,6 +73,7 @@ module Type =
 
     let rec toJSON (ty: Type) =
         match ty with
+        | Void -> Encode.string "voidType"
         | NumType numType ->
             Encode.object [ "type", Encode.string "numType"
                             "kind", Encode.string (string numType) ]
