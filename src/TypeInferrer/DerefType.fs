@@ -89,14 +89,13 @@ let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr
 
 and private derefTypeInBlock (assigns: list<Assign>) (block: MutableBlock) =
     result {
-        let! body =
+        let! preceding =
             block
-            |> Block.body
-            |> fst
+            |> Block.precedingBody
             |> List.map (derefType assigns)
             |> List.sequenceResultA
             |> Result.mapError List.concat
 
-        let! last = derefType assigns (block |> Block.body |> snd)
-        return Block.make (Block.openBrace block) (body, last) (Block.closeBrace block)
+        let! last = derefType assigns (Block.lastBody block)
+        return Block.make (Block.openBrace block) preceding last (Block.closeBrace block)
     }

@@ -8,11 +8,14 @@ type Block<'Expr when 'Expr :> IExpr> =
     private | Block of openBrace: OpenBrace * body: (list<'Expr> * 'Expr) * closeBrace: CloseBrace
 
 module Block =
-    let make openBrace body closeBrace = Block(openBrace, body, closeBrace)
+    let make openBrace preceding last closeBrace =
+        Block(openBrace, (preceding, last), closeBrace)
 
     let openBrace (Block (openBrace, _, _)) = openBrace
 
-    let body (Block (_, body, _)) = body
+    let precedingBody (Block (_, (preceding, _), _)) = preceding
+
+    let lastBody (Block (_, (_, last), _)) = last
 
     let closeBrace (Block (_, _, closeBrace)) = closeBrace
 
@@ -22,10 +25,10 @@ module Block =
         Range.combine openBrace closeBrace
 
     let toJSON (createExprEncoder: 'Expr -> IExprEncoder) (block: Block<'Expr>) =
-        let (Block (openBrace, (body, last), closeBrace)) = block
+        let (Block (openBrace, (preceding, last), closeBrace)) = block
 
         let body =
-            body @ [ last ]
+            preceding @ [ last ]
             |> List.map (fun expr -> (createExprEncoder expr).toJSON ())
             |> Encode.list
 

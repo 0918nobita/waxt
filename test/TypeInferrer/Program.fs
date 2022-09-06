@@ -33,11 +33,11 @@ let Test1 () =
             IfExpr.make
                 (IfKeyword at)
                 (I32Eqz(Var(n, ref None, at), at))
-                (Block.make (OpenBrace pos) ([], I32Const(1, at)) (CloseBrace pos))
+                (Block.make (OpenBrace pos) [] (I32Const(1, at)) (CloseBrace pos))
                 (Block.make
                     (OpenBrace pos)
-                    ([],
-                     I32Mul(
+                    []
+                    (I32Mul(
                          Var(n, ref None, at),
                          I32MulOp pos,
                          Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)

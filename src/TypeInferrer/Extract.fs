@@ -129,8 +129,7 @@ and private extractFromBlock (funcContext: FuncContext) (varContext: VarContext)
     result {
         let! e =
             block
-            |> Block.body
-            |> fst
+            |> Block.precedingBody
             |> List.map (fun expr ->
                 result {
                     let! (e, ty) = extract funcContext varContext expr
@@ -143,6 +142,6 @@ and private extractFromBlock (funcContext: FuncContext) (varContext: VarContext)
             |> Result.map TypeSimulEquation.combineMany
             |> Result.mapError List.concat
 
-        let! (e', ty) = extract funcContext varContext (block |> Block.body |> snd)
+        let! (e', ty) = extract funcContext varContext (Block.lastBody block)
         return (TypeSimulEquation.combine e e', ty)
     }
