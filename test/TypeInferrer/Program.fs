@@ -2,7 +2,6 @@ module Waxt.TypeInferrer.Test.Program
 
 open NUnit.Framework
 open Waxt.Ast
-open Waxt.Ast.ExprExt
 open Waxt.Location
 open Waxt.TestUtil
 open Waxt.Token
@@ -31,21 +30,19 @@ let Test1 () =
 
     let expr =
         If(
-            IfExpr(
-                IfKeyword at,
-                I32Eqz(Var(n, ref None, at), at),
-                Block(OpenBrace pos, ([], I32Const(1, at)), CloseBrace pos),
-                Block(
-                    OpenBrace pos,
+            IfExpr.make
+                (IfKeyword at)
+                (I32Eqz(Var(n, ref None, at), at))
+                (Block.make (OpenBrace pos) ([], I32Const(1, at)) (CloseBrace pos))
+                (Block.make
+                    (OpenBrace pos)
                     ([],
                      I32Mul(
                          Var(n, ref None, at),
                          I32MulOp pos,
                          Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
-                     )),
-                    CloseBrace pos
-                )
-            )
+                     ))
+                    (CloseBrace pos))
         )
 
     let (simulEquation, _ty) = extract funcContext varContext expr |> wantOk
@@ -54,7 +51,10 @@ let Test1 () =
 
     let dereferenced = expr |> derefType assigns |> wantOk
 
-    SnapshotTest.VerifyJSON(encodeExpr dereferenced)
+    SnapshotTest.VerifyJSON(
+        (ExprEncoder dereferenced :> IExprEncoder)
+            .toJSON ()
+    )
 
 [<EntryPoint>]
 let main _ = 0

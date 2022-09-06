@@ -35,13 +35,13 @@ let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr
             return I32Mul(lhs, opLoc, rhs)
         }
 
-    | If (IfExpr (if_, cond, thenClause, elseClause)) ->
+    | If ifExpr ->
         result {
-            let! cond = derefType assigns cond
-            let! thenClause = derefTypeInBlock assigns thenClause
-            let! elseClause = derefTypeInBlock assigns elseClause
+            let! cond = derefType assigns (IfExpr.cond ifExpr)
+            let! thenClause = derefTypeInBlock assigns (IfExpr.thenClause ifExpr)
+            let! elseClause = derefTypeInBlock assigns (IfExpr.elseClause ifExpr)
 
-            return If(IfExpr(if_, cond, thenClause, elseClause))
+            return If(IfExpr.make (IfExpr.ifKeyword ifExpr) cond thenClause elseClause)
         }
 
     | Let (varName, boundValue, body, at) ->
@@ -87,14 +87,16 @@ let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr
             return Var(varName, ty, at)
         }
 
-and private derefTypeInBlock (assigns: list<Assign>) ((Block (openBrace, (body, last), closeBrace)): MutableBlock) =
+and private derefTypeInBlock (assigns: list<Assign>) (block: MutableBlock) =
     result {
         let! body =
-            body
+            block
+            |> Block.body
+            |> fst
             |> List.map (derefType assigns)
             |> List.sequenceResultA
             |> Result.mapError List.concat
 
-        let! last = derefType assigns last
-        return Block(openBrace, (body, last), closeBrace)
+        let! last = derefType assigns (block |> Block.body |> snd)
+        return Block.make (Block.openBrace block) (body, last) (Block.closeBrace block)
     }

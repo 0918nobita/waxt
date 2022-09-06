@@ -9,10 +9,10 @@
     <Compile Include="VarName.fs"/>
     <Compile Include="FuncName.fs" />
     <Compile Include="TypeLiteral.fs" />
-    <Compile Include="Expr.fs" />
+    <Compile Include="ExprAbst.fs" />
     <Compile Include="Block.fs" />
     <Compile Include="IfExpr.fs" />
-    <Compile Include="ExprExt.fs" />
+    <Compile Include="ExprImpl.fs" />
   </ItemGroup>
 
   <ItemGroup>
