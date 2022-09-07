@@ -68,9 +68,20 @@ dotnet test
 ```mermaid
 graph TB
   Token-->Location
+  Lexer-->Token
+  Parser-->Token
+  Parser-->Ast
   Ast-->Token
   Ast-->Type
   Ir-->Location
   Ir-->Type
   TypeInferrer-->Ast
+  TypeInferrer-->Ir
+  CodeGen-->Ir
+  CodeGen-->Wasm
+  Compiler-->Lexer
+  Compiler-->Parser
+  Compiler-->TypeInferrer
+  Compiler-->CodeGen
+  Cli-->Compiler
 ```
