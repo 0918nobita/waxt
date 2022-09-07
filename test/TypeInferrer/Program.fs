@@ -38,10 +38,10 @@ let Test1 () =
                     (OpenBrace pos)
                     []
                     (I32Mul(
-                         Var(n, ref None, at),
-                         I32MulOp pos,
-                         Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
-                     ))
+                        Var(n, ref None, at),
+                        I32MulOp pos,
+                        Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
+                    ))
                     (CloseBrace pos))
         )
 
@@ -51,10 +51,7 @@ let Test1 () =
 
     let dereferenced = expr |> derefType assigns |> wantOk
 
-    SnapshotTest.VerifyJSON(
-        (ExprEncoder dereferenced :> IExprEncoder)
-            .toJSON ()
-    )
+    SnapshotTest.VerifyJSON(FixedExpr.encodeExpr dereferenced)
 
 [<EntryPoint>]
 let main _ = 0

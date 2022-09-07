@@ -24,15 +24,15 @@ module IfExpr =
         let elseClause = Block.locate elseClause
         Range.combine ifKeyword elseClause
 
-    let toJSON (createExprEncoder: 'Expr -> IExprEncoder) (ifExpr: IfExpr<'Expr>) =
+    let toJSON (encodeExpr: EncodeExpr<'Expr>) (ifExpr: IfExpr<'Expr>) =
         let (IfExpr (ifKeyword, cond, thenClause, elseClause)) = ifExpr
-        let thenClause = Block.toJSON createExprEncoder thenClause
+        let thenClause = Block.toJSON encodeExpr thenClause
 
-        let elseClause = Block.toJSON createExprEncoder elseClause
+        let elseClause = Block.toJSON encodeExpr elseClause
 
         [ "type", Encode.string "if"
           "if", ifKeyword |> IfKeyword.locate |> Range.toJSON
-          "cond", (createExprEncoder cond).toJSON ()
+          "cond", encodeExpr cond
           "then", thenClause
           "else", elseClause ]
         |> Encode.object

@@ -24,12 +24,12 @@ module Block =
         let closeBrace = CloseBrace.locate closeBrace
         Range.combine openBrace closeBrace
 
-    let toJSON (createExprEncoder: 'Expr -> IExprEncoder) (block: Block<'Expr>) =
+    let toJSON (encodeExpr: EncodeExpr<'Expr>) (block: Block<'Expr>) =
         let (Block (openBrace, (preceding, last), closeBrace)) = block
 
         let body =
             preceding @ [ last ]
-            |> List.map (fun expr -> (createExprEncoder expr).toJSON ())
+            |> List.map encodeExpr
             |> Encode.list
 
         [ "type", Encode.string "block"

@@ -46,79 +46,71 @@ type MutableBlock = Block<MutableExpr>
 
 type FixedExpr = Expr<Type>
 
-type ExprEncoder =
-    | ExprEncoder of FixedExpr
+module FixedExpr =
+    let rec encodeExpr (expr: FixedExpr) =
+        match expr with
+        | I32Const (n, at) ->
+            [ "type", Encode.string "i32Const"
+              "value", Encode.int n
+              "at", Range.toJSON at ]
+            |> Encode.object
 
-    interface IExprEncoder with
-        member this.toJSON() =
-            let (ExprEncoder expr) = this
+        | I32Eqz (arg, at) ->
+            [ "type", Encode.string "i32Eqz"
+              "arg", encodeExpr arg
+              "at", Range.toJSON at ]
+            |> Encode.object
 
-            match expr with
-            | I32Const (n, at) ->
-                [ "type", Encode.string "i32Const"
-                  "value", Encode.int n
-                  "at", Range.toJSON at ]
-                |> Encode.object
+        | I32Add (lhs, op, rhs) ->
+            [ "type", Encode.string "i32Add"
+              "lhs", encodeExpr lhs
+              "opLoc", op |> I32AddOp.locate |> Range.toJSON
+              "rhs", encodeExpr rhs ]
+            |> Encode.object
 
-            | I32Eqz (arg, at) ->
-                [ "type", Encode.string "i32Eqz"
-                  "arg", (ExprEncoder arg :> IExprEncoder).toJSON ()
-                  "at", Range.toJSON at ]
-                |> Encode.object
+        | I32Sub (lhs, op, rhs) ->
+            [ "type", Encode.string "i32Add"
+              "lhs", encodeExpr lhs
+              "opLoc", op |> I32SubOp.locate |> Range.toJSON
+              "rhs", encodeExpr rhs ]
+            |> Encode.object
 
-            | I32Add (lhs, op, rhs) ->
-                [ "type", Encode.string "i32Add"
-                  "lhs", (ExprEncoder lhs :> IExprEncoder).toJSON ()
-                  "opLoc", op |> I32AddOp.locate |> Range.toJSON
-                  "rhs", (ExprEncoder rhs :> IExprEncoder).toJSON () ]
-                |> Encode.object
+        | I32Mul (lhs, op, rhs) ->
+            [ "type", Encode.string "i32Add"
+              "lhs", encodeExpr lhs
+              "opLoc", op |> I32MulOp.locate |> Range.toJSON
+              "rhs", encodeExpr rhs ]
+            |> Encode.object
 
-            | I32Sub (lhs, op, rhs) ->
-                [ "type", Encode.string "i32Add"
-                  "lhs", (ExprEncoder lhs :> IExprEncoder).toJSON ()
-                  "opLoc", op |> I32SubOp.locate |> Range.toJSON
-                  "rhs", (ExprEncoder rhs :> IExprEncoder).toJSON () ]
-                |> Encode.object
+        | If ifExpr -> IfExpr.toJSON (fun expr -> encodeExpr expr) ifExpr
 
-            | I32Mul (lhs, op, rhs) ->
-                [ "type", Encode.string "i32Add"
-                  "lhs", (ExprEncoder lhs :> IExprEncoder).toJSON ()
-                  "opLoc", op |> I32MulOp.locate |> Range.toJSON
-                  "rhs", (ExprEncoder rhs :> IExprEncoder).toJSON () ]
-                |> Encode.object
+        | Let (name, boundValue, body, at) ->
+            [ "type", Encode.string "let"
+              "name", VarName.toJSON name
+              "boundValue", encodeExpr boundValue
+              "body", encodeExpr body
+              "at", Range.toJSON at ]
+            |> Encode.object
 
-            | If ifExpr -> IfExpr.toJSON (fun expr -> ExprEncoder expr) ifExpr
+        | LetWithType (name, ty, boundValue, body, at) ->
+            [ "type", Encode.string "letWithType"
+              "name", VarName.toJSON name
+              "typeAnotation", TypeLiteral.toJSON ty
+              "boundValue", encodeExpr boundValue
+              "body", encodeExpr body
+              "at", Range.toJSON at ]
+            |> Encode.object
 
-            | Let (name, boundValue, body, at) ->
-                [ "type", Encode.string "let"
-                  "name", VarName.toJSON name
-                  "boundValue", (ExprEncoder boundValue :> IExprEncoder).toJSON ()
-                  "body", (ExprEncoder body :> IExprEncoder).toJSON ()
-                  "at", Range.toJSON at ]
-                |> Encode.object
+        | Application (funcName, args, at) ->
+            [ "type", Encode.string "application"
+              "funcName", FuncName.toJSON funcName
+              "args", (args |> List.map encodeExpr |> Encode.list)
+              "at", Range.toJSON at ]
+            |> Encode.object
 
-            | LetWithType (name, ty, boundValue, body, at) ->
-                [ "type", Encode.string "letWithType"
-                  "name", VarName.toJSON name
-                  "typeAnotation", TypeLiteral.toJSON ty
-                  "boundValue", (ExprEncoder boundValue :> IExprEncoder).toJSON ()
-                  "body", (ExprEncoder body :> IExprEncoder).toJSON ()
-                  "at", Range.toJSON at ]
-                |> Encode.object
-
-            | Application (funcName, args, at) ->
-                [ "type", Encode.string "application"
-                  "funcName", FuncName.toJSON funcName
-                  "args",
-                  (args
-                   |> List.map (fun arg -> (ExprEncoder arg :> IExprEncoder).toJSON ())
-                   |> Encode.list)
-                  "at", Range.toJSON at ]
-                |> Encode.object
-
-            | Var (varName, ty, at) ->
-                [ "type", Encode.string "var"
-                  "varName", VarName.toJSON varName
-                  "varType", Type.toJSON ty
-                  "at", Range.toJSON at ]
-                |> Encode.object
+        | Var (varName, ty, at) ->
+            [ "type", Encode.string "var"
+              "varName", VarName.toJSON varName
+              "varType", Type.toJSON ty
+              "at", Range.toJSON at ]
+            |> Encode.object
