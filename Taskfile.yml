@@ -1,0 +1,20 @@
+version: '3'
+
+includes:
+  coverage: ./Taskfile_{{OS}}.yml
+
+tasks:
+  tool-restore: dotnet tool restore
+
+  paket-restore: dotnet paket restore
+
+  prepare:
+    - task: tool-restore
+    - task: paket-restore
+
+  build: dotnet build
+
+  test: dotnet test
+
+  coverage:
+    - task: coverage:coverage
