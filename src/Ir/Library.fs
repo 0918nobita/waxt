@@ -6,17 +6,19 @@ type LocalIndex = LocalIndex of uint
 
 type FuncIndex = FuncIndex of uint
 
-type TypedTerm =
+type Term =
     | I32Const of n: int
-    | I32Eqz of TypedTerm
-    | I32Add of lhs: TypedTerm * rhs: TypedTerm
-    | I32Sub of lhs: TypedTerm * rhs: TypedTerm
-    | I32Mul of lhs: TypedTerm * rhs: TypedTerm
-    | If of cond: TypedTerm * thenClause: TypedTerm * elseClause: TypedTerm
-    | Let of LocalIndex * boundValue: TypedTerm * body: TypedTerm
-    | Application of FuncIndex * args: list<TypedTerm>
-    | Var of LocalIndex
+    | I32Eqz of Term
+    | I32Add of lhs: Term * rhs: Term
+    | I32Sub of lhs: Term * rhs: Term
+    | I32Mul of lhs: Term * rhs: Term
+    | If of resultType: NumType * cond: Term * thenClause: list<Term> * elseClause: list<Term>
+    | Application of FuncIndex * args: list<Term>
+    | LocalGet of NumType * LocalIndex
+    | LocalSet of NumType * LocalIndex * Term
 
-type FuncParams = list<Type>
+type FuncParams = list<NumType>
 
-type FuncDef = FuncDef of FuncParams * ret: option<Type> * body: list<TypedTerm>
+type FuncDef = FuncDef of FuncParams * ret: option<NumType> * body: list<Term>
+
+type Module = list<FuncDef>
