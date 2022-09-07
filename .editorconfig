@@ -8,5 +8,5 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{fsproj,json,yml}]
+[*.{fsproj,json,yml,wat}]
 indent_size = 2
