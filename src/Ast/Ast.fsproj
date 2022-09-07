@@ -1,24 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Waxt.Ast</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="VarName.fs"/>
-    <Compile Include="FuncName.fs" />
     <Compile Include="TypeLiteral.fs" />
     <Compile Include="ExprAbst.fs" />
+    <Compile Include="Parenthesized.fs" />
     <Compile Include="Block.fs" />
     <Compile Include="IfExpr.fs" />
     <Compile Include="ExprImpl.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Token\Token.fsproj" />
     <ProjectReference Include="..\Type\Type.fsproj" />
   </ItemGroup>
-
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

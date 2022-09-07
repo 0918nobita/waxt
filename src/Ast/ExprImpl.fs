@@ -8,37 +8,55 @@ open Waxt.Type
 type Expr<'Ty> =
     | I32Const of n: int * at: Range
 
-    | I32Eqz of Expr<'Ty> * at: Range
+    | I32Eqz of Parenthesized<{| Ident: Ident; Arg: Expr<'Ty> |}>
 
-    | I32Add of lhs: Expr<'Ty> * op: I32AddOp * rhs: Expr<'Ty>
-    | I32Sub of lhs: Expr<'Ty> * op: I32SubOp * rhs: Expr<'Ty>
-    | I32Mul of lhs: Expr<'Ty> * op: I32MulOp * rhs: Expr<'Ty>
+    | I32Add of
+        Parenthesized<{| Ident: Ident
+                         Lhs: Expr<'Ty>
+                         Rhs: Expr<'Ty> |}>
+
+    | I32Sub of
+        Parenthesized<{| Ident: Ident
+                         Lhs: Expr<'Ty>
+                         Rhs: Expr<'Ty> |}>
+
+    | I32Mul of
+        Parenthesized<{| Ident: Ident
+                         Lhs: Expr<'Ty>
+                         Rhs: Expr<'Ty> |}>
 
     | If of IfExpr<Expr<'Ty>>
 
-    | Let of VarName * boundValue: Expr<'Ty> * body: Expr<'Ty> * at: Range
-    | LetWithType of VarName * TypeLiteral * value: Expr<'Ty> * body: Expr<'Ty> * at: Range
+    | Let of
+        Parenthesized<{| VarName: Ident
+                         BoundValue: Expr<'Ty>
+                         Body: Expr<'Ty> |}>
 
-    | Application of FuncName * args: list<Expr<'Ty>> * at: Range
+    | LetWithType of
+        Parenthesized<{| VarName: Ident
+                         TypeAnnotation: TypeLiteral
+                         BoundValue: Expr<'Ty>
+                         Body: Expr<'Ty> |}>
 
-    | Var of VarName * ty: 'Ty * at: Range
+    | Application of
+        Parenthesized<{| FuncName: Ident
+                         Args: list<Expr<'Ty>> |}>
+
+    | Var of varName: Ident * ty: 'Ty
 
     interface IExpr with
         member this.locate() =
             match this with
-            | I32Const (_, at)
-            | I32Eqz (_, at) -> at
-            | I32Add (lhs, _, rhs)
-            | I32Sub (lhs, _, rhs)
-            | I32Mul (lhs, _, rhs) ->
-                let lhs = (lhs :> IExpr).locate ()
-                let rhs = (rhs :> IExpr).locate ()
-                Range.combine lhs rhs
+            | I32Const (_, at) -> at
+            | I32Eqz parenthesized -> Parenthesized.locate parenthesized
+            | I32Add parenthesized
+            | I32Sub parenthesized
+            | I32Mul parenthesized -> Parenthesized.locate parenthesized
             | If ifExpr -> IfExpr.locate ifExpr
-            | Let (_, _, _, at)
-            | LetWithType (_, _, _, _, at)
-            | Application (_, _, at)
-            | Var (_, _, at) -> at
+            | Let parenthesized -> Parenthesized.locate parenthesized
+            | LetWithType parenthesized -> Parenthesized.locate parenthesized
+            | Application parenthesized -> Parenthesized.locate parenthesized
+            | Var (varName, _) -> Ident.locate varName
 
 type MutableExpr = Expr<ref<option<Type>>>
 
@@ -55,62 +73,57 @@ module FixedExpr =
               "at", Range.toJSON at ]
             |> Encode.object
 
-        | I32Eqz (arg, at) ->
+        | I32Eqz (Parenthesized inner) ->
             [ "type", Encode.string "i32Eqz"
-              "arg", encodeExpr arg
-              "at", Range.toJSON at ]
+              "arg", encodeExpr inner.Arg ]
             |> Encode.object
 
-        | I32Add (lhs, op, rhs) ->
+        | I32Add (Parenthesized inner) ->
             [ "type", Encode.string "i32Add"
-              "lhs", encodeExpr lhs
-              "opLoc", op |> I32AddOp.locate |> Range.toJSON
-              "rhs", encodeExpr rhs ]
+              "ident", Ident.toJSON inner.Ident
+              "lhs", encodeExpr inner.Lhs
+              "rhs", encodeExpr inner.Rhs ]
             |> Encode.object
 
-        | I32Sub (lhs, op, rhs) ->
-            [ "type", Encode.string "i32Add"
-              "lhs", encodeExpr lhs
-              "opLoc", op |> I32SubOp.locate |> Range.toJSON
-              "rhs", encodeExpr rhs ]
+        | I32Sub (Parenthesized inner) ->
+            [ "type", Encode.string "i32Sub"
+              "ident", Ident.toJSON inner.Ident
+              "lhs", encodeExpr inner.Lhs
+              "rhs", encodeExpr inner.Rhs ]
             |> Encode.object
 
-        | I32Mul (lhs, op, rhs) ->
-            [ "type", Encode.string "i32Add"
-              "lhs", encodeExpr lhs
-              "opLoc", op |> I32MulOp.locate |> Range.toJSON
-              "rhs", encodeExpr rhs ]
+        | I32Mul (Parenthesized inner) ->
+            [ "type", Encode.string "i32Mul"
+              "ident", Ident.toJSON inner.Ident
+              "lhs", encodeExpr inner.Lhs
+              "rhs", encodeExpr inner.Rhs ]
             |> Encode.object
 
         | If ifExpr -> IfExpr.toJSON (fun expr -> encodeExpr expr) ifExpr
 
-        | Let (name, boundValue, body, at) ->
+        | Let (Parenthesized inner) ->
             [ "type", Encode.string "let"
-              "name", VarName.toJSON name
-              "boundValue", encodeExpr boundValue
-              "body", encodeExpr body
-              "at", Range.toJSON at ]
+              "name", Ident.toJSON inner.VarName
+              "boundValue", encodeExpr inner.BoundValue
+              "body", encodeExpr inner.Body ]
             |> Encode.object
 
-        | LetWithType (name, ty, boundValue, body, at) ->
+        | LetWithType (Parenthesized inner) ->
             [ "type", Encode.string "letWithType"
-              "name", VarName.toJSON name
-              "typeAnotation", TypeLiteral.toJSON ty
-              "boundValue", encodeExpr boundValue
-              "body", encodeExpr body
-              "at", Range.toJSON at ]
+              "name", Ident.toJSON inner.VarName
+              "typeAnotation", TypeLiteral.toJSON inner.TypeAnnotation
+              "boundValue", encodeExpr inner.BoundValue
+              "body", encodeExpr inner.Body ]
             |> Encode.object
 
-        | Application (funcName, args, at) ->
+        | Application (Parenthesized inner) ->
             [ "type", Encode.string "application"
-              "funcName", FuncName.toJSON funcName
-              "args", (args |> List.map encodeExpr |> Encode.list)
-              "at", Range.toJSON at ]
+              "funcName", Ident.toJSON inner.FuncName
+              "args", (inner.Args |> List.map encodeExpr |> Encode.list) ]
             |> Encode.object
 
-        | Var (varName, ty, at) ->
+        | Var (varName, ty) ->
             [ "type", Encode.string "var"
-              "varName", VarName.toJSON varName
-              "varType", Type.toJSON ty
-              "at", Range.toJSON at ]
+              "varName", Ident.toJSON varName
+              "varType", Type.toJSON ty ]
             |> Encode.object

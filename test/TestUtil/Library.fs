@@ -13,7 +13,8 @@ verifySettings.UseExtension("json")
 let wantOk (res: Result<'a, 'b>) : 'a =
     match res with
     | Ok value -> value
-    | Error _ ->
+    | Error msg ->
+        eprintfn "%A" msg
         Assert.Fail "Expected Ok"
         failwith "unreachable"
 

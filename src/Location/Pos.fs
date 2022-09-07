@@ -1,5 +1,7 @@
 namespace Waxt.Location
 
+open Thoth.Json.Net
+
 type Pos =
     private
     | Pos of line: int * column: int
@@ -15,3 +17,9 @@ module Pos =
     let make line column = Pos(line, column)
 
     let origin = Pos(0, 0)
+
+    let
+#if !DEBUG
+    inline
+#endif
+        toJSON (pos: Pos) = pos |> string |> Encode.string

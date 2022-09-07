@@ -16,8 +16,8 @@ let Test1 () =
     let pos = Pos.origin
     let at = Range.fromPos pos
 
-    let fact = FuncName.make "fact"
-    let n = VarName.make "n"
+    let fact = Ident.make "fact" at
+    let n = Ident.make "n" at
 
     let t0 = TyVar(TyVarName.make "t0")
     let t1 = TyVar(TyVarName.make "t1")
@@ -31,18 +31,41 @@ let Test1 () =
     let expr =
         If(
             IfExpr.make
-                (IfKeyword at)
-                (I32Eqz(Var(n, ref None, at), at))
-                (Block.make (OpenBrace pos) [] (I32Const(1, at)) (CloseBrace pos))
+                (Ident.make "if" at)
+                (I32Eqz(
+                    Parenthesized.make
+                        (LeftParen pos)
+                        {| Ident = Ident.make "i32_eqz" at
+                           Arg = Var(n, ref None) |}
+                        (RightParen pos)
+                ))
+                (Block.make (LeftParen pos) [ I32Const(1, at) ] (RightParen pos))
                 (Block.make
-                    (OpenBrace pos)
-                    []
-                    (I32Mul(
-                        Var(n, ref None, at),
-                        I32MulOp pos,
-                        Application(fact, [ I32Sub(Var(n, ref None, at), I32SubOp pos, I32Const(1, at)) ], at)
-                    ))
-                    (CloseBrace pos))
+                    (LeftParen pos)
+                    [ I32Mul(
+                          Parenthesized.make
+                              (LeftParen pos)
+                              {| Ident = Ident.make "i32_mul" at
+                                 Lhs = Var(n, ref None)
+                                 Rhs =
+                                  Application(
+                                      Parenthesized.make
+                                          (LeftParen pos)
+                                          {| FuncName = fact
+                                             Args =
+                                              [ I32Sub(
+                                                    Parenthesized.make
+                                                        (LeftParen pos)
+                                                        {| Ident = Ident.make "i32_sub" at
+                                                           Lhs = Var(n, ref None)
+                                                           Rhs = I32Const(1, at) |}
+                                                        (RightParen pos)
+                                                ) ] |}
+                                          (RightParen pos)
+                                  ) |}
+                              (RightParen pos)
+                      ) ]
+                    (RightParen pos))
         )
 
     let (simulEquation, _ty) = extract funcContext varContext expr |> wantOk

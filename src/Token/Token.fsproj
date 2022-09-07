@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="BinOp.fs" />
-    <Compile Include="Keyword.fs" />
-    <Compile Include="Brace.fs" />
+    <Compile Include="Ident.fs" />
+    <Compile Include="Paren.fs" />
+    <Compile Include="Library.fs" />
   </ItemGroup>
 
   <ItemGroup>

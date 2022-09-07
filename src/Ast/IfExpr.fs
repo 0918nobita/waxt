@@ -5,13 +5,13 @@ open Waxt.Location
 open Waxt.Token
 
 type IfExpr<'Expr when 'Expr :> IExpr> =
-    private | IfExpr of ifKeyword: IfKeyword * cond: 'Expr * thenClause: Block<'Expr> * elseClause: Block<'Expr>
+    private | IfExpr of ifIdent: Ident * cond: 'Expr * thenClause: Block<'Expr> * elseClause: Block<'Expr>
 
 module IfExpr =
-    let make ifKeyword cond thenClause elseClause =
-        IfExpr(ifKeyword, cond, thenClause, elseClause)
+    let make ifIdent cond thenClause elseClause =
+        IfExpr(ifIdent, cond, thenClause, elseClause)
 
-    let ifKeyword (IfExpr (ifKeyword, _, _, _)) = ifKeyword
+    let ifIdent (IfExpr (ifIdent, _, _, _)) = ifIdent
 
     let cond (IfExpr (_, cond, _, _)) = cond
 
@@ -19,19 +19,19 @@ module IfExpr =
 
     let elseClause (IfExpr (_, _, _, elseClause)) = elseClause
 
-    let locate (IfExpr (ifKeyword, _, _, elseClause)) =
-        let ifKeyword = IfKeyword.locate ifKeyword
+    let locate (IfExpr (ifIdent, _, _, elseClause)) =
+        let ifKeyword = Ident.locate ifIdent
         let elseClause = Block.locate elseClause
         Range.combine ifKeyword elseClause
 
     let toJSON (encodeExpr: EncodeExpr<'Expr>) (ifExpr: IfExpr<'Expr>) =
-        let (IfExpr (ifKeyword, cond, thenClause, elseClause)) = ifExpr
+        let (IfExpr (ifIdent, cond, thenClause, elseClause)) = ifExpr
         let thenClause = Block.toJSON encodeExpr thenClause
 
         let elseClause = Block.toJSON encodeExpr elseClause
 
         [ "type", Encode.string "if"
-          "if", ifKeyword |> IfKeyword.locate |> Range.toJSON
+          "if", ifIdent |> Ident.locate |> Range.toJSON
           "cond", encodeExpr cond
           "then", thenClause
           "else", elseClause ]

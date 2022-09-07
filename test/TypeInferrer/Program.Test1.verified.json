@@ -5,18 +5,20 @@
     "type": "i32Eqz",
     "arg": {
       "type": "var",
-      "varName": "n",
+      "varName": {
+        "type": "ident",
+        "raw": "n",
+        "at": "1:1-1:1"
+      },
       "varType": {
         "type": "numType",
         "kind": "i32"
-      },
-      "at": "1:1-1:1"
-    },
-    "at": "1:1-1:1"
+      }
+    }
   },
   "then": {
     "type": "block",
-    "openBrace": "1:1-1:1",
+    "openParen": "1:1-1:1",
     "body": [
       {
         "type": "i32Const",
@@ -24,51 +26,68 @@
         "at": "1:1-1:1"
       }
     ],
-    "closeBrace": "1:1-1:1"
+    "closeParen": "1:1-1:1"
   },
   "else": {
     "type": "block",
-    "openBrace": "1:1-1:1",
+    "openParen": "1:1-1:1",
     "body": [
       {
-        "type": "i32Add",
+        "type": "i32Mul",
+        "ident": {
+          "type": "ident",
+          "raw": "i32_mul",
+          "at": "1:1-1:1"
+        },
         "lhs": {
           "type": "var",
-          "varName": "n",
+          "varName": {
+            "type": "ident",
+            "raw": "n",
+            "at": "1:1-1:1"
+          },
           "varType": {
             "type": "numType",
             "kind": "i32"
-          },
-          "at": "1:1-1:1"
+          }
         },
-        "opLoc": "1:1-1:1",
         "rhs": {
           "type": "application",
-          "funcName": "fact",
+          "funcName": {
+            "type": "ident",
+            "raw": "fact",
+            "at": "1:1-1:1"
+          },
           "args": [
             {
-              "type": "i32Add",
+              "type": "i32Sub",
+              "ident": {
+                "type": "ident",
+                "raw": "i32_sub",
+                "at": "1:1-1:1"
+              },
               "lhs": {
                 "type": "var",
-                "varName": "n",
+                "varName": {
+                  "type": "ident",
+                  "raw": "n",
+                  "at": "1:1-1:1"
+                },
                 "varType": {
                   "type": "numType",
                   "kind": "i32"
-                },
-                "at": "1:1-1:1"
+                }
               },
-              "opLoc": "1:1-1:1",
               "rhs": {
                 "type": "i32Const",
                 "value": 1,
                 "at": "1:1-1:1"
               }
             }
-          ],
-          "at": "1:1-1:1"
+          ]
         }
       }
     ],
-    "closeBrace": "1:1-1:1"
+    "closeParen": "1:1-1:1"
   }
 }

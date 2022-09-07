@@ -2,37 +2,58 @@ module Waxt.TypeInferrer.DerefType
 
 open FsToolkit.ErrorHandling
 open Waxt.Ast
+open Waxt.Token
 open Waxt.Type
 
 let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr, list<TypeInferenceError>> =
     match expr with
     | I32Const (n, at) -> Ok(I32Const(n, at))
 
-    | I32Eqz (t, at) ->
+    | I32Eqz (Parenthesized inner as parenthesized) ->
         result {
-            let! t = derefType assigns t
-            return I32Eqz(t, at)
+            let! arg = derefType assigns inner.Arg
+
+            return
+                I32Eqz(
+                    parenthesized
+                    |> Parenthesized.setInner {| inner with Arg = arg |}
+                )
         }
 
-    | I32Add (lhs, opLoc, rhs) ->
+    | I32Add (Parenthesized inner as parenthesized) ->
         result {
-            let! lhs = derefType assigns lhs
-            let! rhs = derefType assigns rhs
-            return I32Add(lhs, opLoc, rhs)
+            let! lhs = derefType assigns inner.Lhs
+            let! rhs = derefType assigns inner.Rhs
+
+            return
+                I32Add(
+                    parenthesized
+                    |> Parenthesized.setInner {| inner with Lhs = lhs; Rhs = rhs |}
+                )
         }
 
-    | I32Sub (lhs, opLoc, rhs) ->
+    | I32Sub (Parenthesized inner as parenthesized) ->
         result {
-            let! lhs = derefType assigns lhs
-            let! rhs = derefType assigns rhs
-            return I32Sub(lhs, opLoc, rhs)
+            let! lhs = derefType assigns inner.Lhs
+            let! rhs = derefType assigns inner.Rhs
+
+            return
+                I32Sub(
+                    parenthesized
+                    |> Parenthesized.setInner {| inner with Lhs = lhs; Rhs = rhs |}
+                )
         }
 
-    | I32Mul (lhs, opLoc, rhs) ->
+    | I32Mul (Parenthesized inner as parenthesized) ->
         result {
-            let! lhs = derefType assigns lhs
-            let! rhs = derefType assigns rhs
-            return I32Mul(lhs, opLoc, rhs)
+            let! lhs = derefType assigns inner.Lhs
+            let! rhs = derefType assigns inner.Rhs
+
+            return
+                I32Mul(
+                    parenthesized
+                    |> Parenthesized.setInner {| inner with Lhs = lhs; Rhs = rhs |}
+                )
         }
 
     | If ifExpr ->
@@ -41,35 +62,57 @@ let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr
             let! thenClause = derefTypeInBlock assigns (IfExpr.thenClause ifExpr)
             let! elseClause = derefTypeInBlock assigns (IfExpr.elseClause ifExpr)
 
-            return If(IfExpr.make (IfExpr.ifKeyword ifExpr) cond thenClause elseClause)
+            return If(IfExpr.make (IfExpr.ifIdent ifExpr) cond thenClause elseClause)
         }
 
-    | Let (varName, boundValue, body, at) ->
+    | Let (Parenthesized inner as parenthesized) ->
         result {
-            let! boundValue = derefType assigns boundValue
-            let! body = derefType assigns body
-            return Let(varName, boundValue, body, at)
+            let! boundValue = derefType assigns inner.BoundValue
+            let! body = derefType assigns inner.Body
+
+            return
+                Let(
+                    parenthesized
+                    |> Parenthesized.setInner
+                        {| inner with
+                            BoundValue = boundValue
+                            Body = body |}
+                )
         }
 
-    | LetWithType (varName, ty, boundValue, body, at) ->
+    | LetWithType (Parenthesized inner as parenthesized) ->
         result {
-            let! boundValue = derefType assigns boundValue
-            let! body = derefType assigns body
-            return LetWithType(varName, ty, boundValue, body, at)
+            let! boundValue = derefType assigns inner.BoundValue
+            let! body = derefType assigns inner.Body
+
+            return
+                LetWithType(
+                    parenthesized
+                    |> Parenthesized.setInner
+                        {| inner with
+                            BoundValue = boundValue
+                            Body = body |}
+                )
         }
 
-    | Application (funcName, args, at) ->
+    | Application (Parenthesized inner as parenthesized) ->
         result {
             let! args =
-                args
+                inner.Args
                 |> List.map (derefType assigns)
                 |> List.sequenceResultA
                 |> Result.mapError (fun err -> List.concat err)
 
-            return Application(funcName, args, at)
+            return
+                Application(
+                    parenthesized
+                    |> Parenthesized.setInner {| inner with Args = args |}
+                )
         }
 
-    | Var (varName, tyRef, at) ->
+    | Var (varName, tyRef) ->
+        let at = Ident.locate varName
+
         result {
             let! ty =
                 tyRef.Value
@@ -84,18 +127,17 @@ let rec derefType (assigns: list<Assign>) (expr: MutableExpr) : Result<FixedExpr
                     |> Result.requireSome [ TypeInferenceError($"%O{tyVarName} was not resolved", at) ]
                 | _ -> Ok ty
 
-            return Var(varName, ty, at)
+            return Var(varName, ty)
         }
 
 and private derefTypeInBlock (assigns: list<Assign>) (block: MutableBlock) =
     result {
-        let! preceding =
+        let! body =
             block
-            |> Block.precedingBody
+            |> Block.body
             |> List.map (derefType assigns)
             |> List.sequenceResultA
             |> Result.mapError List.concat
 
-        let! last = derefType assigns (Block.lastBody block)
-        return Block.make (Block.openBrace block) preceding last (Block.closeBrace block)
+        return Block.make (Block.openParen block) body (Block.closeParen block)
     }
