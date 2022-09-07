@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
-      - run: dotnet tool restore
-      - run: dotnet paket restore
-      - run: dotnet restore
-      - run: ./coverage.sh
+      - run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+      - run: echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
+      - run: task prepare
+      - run: task coverage
