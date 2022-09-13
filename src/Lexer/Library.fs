@@ -10,7 +10,7 @@ type Eol =
 
 type LexOption = LexOption of eol: Eol
 
-let (|NewLine|_|) (LexOption eol) (cs: list<char>) =
+let private (|NewLine|_|) (LexOption eol) (cs: list<char>) =
     match eol, cs with
     | Cr, '\r' :: cs' -> Some cs'
     | Lf, '\n' :: cs' -> Some cs'
@@ -25,22 +25,22 @@ let private (|WhiteSpace|_|) c =
 
 let private (|CLeftParen|_|) =
     function
-    | '(' -> Some LeftParen
+    | '(' -> Some(fun pos -> Token.LeftParen(LeftParen pos))
     | _ -> None
 
 let private (|CRightParen|_|) =
     function
-    | ')' -> Some RightParen
+    | ')' -> Some(fun pos -> Token.RightParen(RightParen pos))
     | _ -> None
 
 let private (|CLeftBracket|_|) =
     function
-    | '[' -> Some LeftBracket
+    | '[' -> Some(fun pos -> Token.LeftBracket(LeftBracket pos))
     | _ -> None
 
 let private (|CRightBracket|_|) =
     function
-    | ']' -> Some RightBracket
+    | ']' -> Some(fun pos -> Token.RightBracket(RightBracket pos))
     | _ -> None
 
 let rec private lex'
@@ -56,21 +56,39 @@ let rec private lex'
 
     | None, WhiteSpace :: cs -> lex' lexOption (Pos.nextColumn currentPos) None cs
 
+    | None,
+      (CLeftParen makeTok
+      | CRightParen makeTok
+      | CLeftBracket makeTok
+      | CRightBracket makeTok) :: cs ->
+        makeTok currentPos
+        :: lex' lexOption (Pos.nextColumn currentPos) None cs
+
     | None, c :: cs -> lex' lexOption (Pos.nextColumn currentPos) (Some(currentPos, string c)) cs
 
     | Some (startPos, str), [] -> [ Token.Ident(Ident.make str (Range.make startPos currentPos)) ]
 
     | Some (startPos, str), NewLine lexOption cs ->
-        let tokens = lex' lexOption (Pos.nextLine currentPos) None cs
+        let succeedingTokens = lex' lexOption (Pos.nextLine currentPos) None cs
 
         Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
-        :: tokens
+        :: succeedingTokens
 
     | Some (startPos, str), WhiteSpace :: cs ->
-        let tokens = lex' lexOption (Pos.nextColumn currentPos) None cs
+        let succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) None cs
 
         Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
-        :: tokens
+        :: succeedingTokens
+
+    | Some (startPos, str),
+      (CLeftParen makeTok
+      | CRightParen makeTok
+      | CLeftBracket makeTok
+      | CRightBracket makeTok) :: cs ->
+        let succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) None cs
+
+        Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
+        :: makeTok currentPos :: succeedingTokens
 
     | Some (startPos, str), c :: cs -> lex' lexOption (Pos.nextColumn currentPos) (Some(startPos, str + string c)) cs
 
