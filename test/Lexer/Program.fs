@@ -8,7 +8,7 @@ open Waxt.Token
 
 [<Test>]
 let Test1 () =
-    let tokens = lex (LexOption Lf) "(foo 12 bar)"
+    let tokens = lex (LexOption Lf) "(foo 12 bar -7)"
 
     SnapshotTest.VerifyJSON(
         tokens

@@ -58,8 +58,12 @@ let private (|CRightBracket|_|) =
 
 type LexState =
     | Initial
-    | ReadingI32Lit of startPos: Pos * value: int
+    | ReadingMinus of startPos: Pos
+    | ReadingI32Lit of startPos: Pos * abs: int * neg: bool
     | ReadingIdent of startPos: Pos * raw: string
+
+let private makeI32Lit (neg: bool) (abs: int) (start: Pos) (end_: Pos) =
+    Token.I32Lit(I32Lit((if neg then -abs else abs), Range.make start end_))
 
 let rec private lex'
     (lexOption: LexOption)
@@ -71,9 +75,10 @@ let rec private lex'
     | [] ->
         match state with
         | Initial -> Ok []
-        | ReadingI32Lit (startPos, n) ->
+        | ReadingMinus _ -> Error [ "Expected digits, but reached EOF" ]
+        | ReadingI32Lit (startPos, abs, neg) ->
             let end_ = Pos.previousColumn currentPos
-            Ok [ Token.I32Lit(I32Lit(n, Range.make startPos end_)) ]
+            Ok [ makeI32Lit neg abs startPos end_ ]
         | ReadingIdent (startPos, raw) ->
             let end_ = Pos.previousColumn currentPos
             Ok [ Token.Ident(Ident.make raw (Range.make startPos end_)) ]
@@ -81,14 +86,15 @@ let rec private lex'
     | NewLine lexOption cs ->
         match state with
         | Initial -> lex' lexOption (Pos.nextLine currentPos) Initial cs
-        | ReadingI32Lit (startPos, n) ->
+        | ReadingMinus _ -> Error [ "Expected digits, but reached EOL" ]
+        | ReadingI32Lit (startPos, abs, neg) ->
             let end_ = Pos.previousColumn currentPos
 
             result {
                 let! succeedingTokens = lex' lexOption (Pos.nextLine currentPos) Initial cs
 
                 return
-                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    makeI32Lit neg abs startPos end_
                     :: succeedingTokens
             }
         | ReadingIdent (startPos, raw) ->
@@ -105,14 +111,15 @@ let rec private lex'
     | WhiteSpace :: cs ->
         match state with
         | Initial -> lex' lexOption (Pos.nextColumn currentPos) Initial cs
-        | ReadingI32Lit (startPos, n) ->
+        | ReadingMinus _ -> Error [ "Expected digits, but found whitespace" ]
+        | ReadingI32Lit (startPos, abs, neg) ->
             let end_ = Pos.previousColumn currentPos
 
             result {
                 let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
 
                 return
-                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    makeI32Lit neg abs startPos end_
                     :: succeedingTokens
             }
         | ReadingIdent (startPos, raw) ->
@@ -136,14 +143,15 @@ let rec private lex'
                 let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
                 return makeTok currentPos :: succeedingTokens
             }
-        | ReadingI32Lit (startPos, n) ->
+        | ReadingMinus _ -> Error [ "Expected digits" ]
+        | ReadingI32Lit (startPos, abs, neg) ->
             let end_ = Pos.previousColumn currentPos
 
             result {
                 let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
 
                 return
-                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    makeI32Lit neg abs startPos end_
                     :: makeTok currentPos :: succeedingTokens
             }
         | ReadingIdent (startPos, raw) ->
@@ -157,9 +165,18 @@ let rec private lex'
                     :: makeTok currentPos :: succeedingTokens
             }
 
+    | '-' :: cs ->
+        match state with
+        | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingMinus currentPos) cs
+        | ReadingMinus _ -> Error [ "Expected digits" ]
+        | ReadingI32Lit _ -> Error [ "Unexpected minus" ]
+        | ReadingIdent (startPos, raw) ->
+            lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + "-")) cs
+
     | Letter as c :: cs ->
         match state with
         | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(currentPos, string c)) cs
+        | ReadingMinus _ -> Error [ "Expected digits" ]
         | ReadingI32Lit _ ->
             let errors =
                 lex' lexOption (Pos.nextColumn currentPos) Initial cs
@@ -171,9 +188,10 @@ let rec private lex'
 
     | Digit n :: cs ->
         match state with
-        | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(currentPos, n)) cs
-        | ReadingI32Lit (startPos, n') ->
-            lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(startPos, n' * 10 + n)) cs
+        | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(currentPos, n, false)) cs
+        | ReadingMinus startPos -> lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(startPos, n, true)) cs
+        | ReadingI32Lit (startPos, abs, neg) ->
+            lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(startPos, abs * 10 + n, neg)) cs
         | ReadingIdent (startPos, raw) ->
             lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + string n)) cs
 
