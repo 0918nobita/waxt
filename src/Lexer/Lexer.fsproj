@@ -9,6 +9,7 @@
     <Compile Include="LexOption.fs" />
     <Compile Include="CharPattern.fs" />
     <Compile Include="State.fs" />
+    <Compile Include="Error.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

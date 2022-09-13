@@ -1,4 +1,4 @@
-namespace Waxt.Lexer
+module private Waxt.Lexer.State
 
 open Waxt.Location
 

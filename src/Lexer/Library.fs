@@ -6,14 +6,15 @@ open Waxt.Location
 open Waxt.Token
 
 open CharPattern
+open State
 
 let private makeI32Lit (neg: bool) (abs: int) (start: Pos) (end_: Pos) =
     Token.I32Lit(I32Lit((if neg then -abs else abs), Range.make start end_))
 
-let private extractToken (state: LexState) (end_: Pos) =
+let private extractToken (state: LexState) (end_: Pos) : Result<Token, list<LexError>> =
     match state with
     | Initial -> failwith "unreachable"
-    | ReadingMinus _ -> Error [ "Expected digit(s) after minus" ]
+    | ReadingMinus _ -> Error [ LexError("Expected digit(s) after minus", end_) ]
     | ReadingI32Lit (startPos, abs, neg) -> Ok(makeI32Lit neg abs startPos end_)
     | ReadingIdent (startPos, raw) -> Ok(Token.Ident(Ident.make raw (Range.make startPos end_)))
 
@@ -22,7 +23,7 @@ let rec private lex'
     (currentPos: Pos)
     (state: LexState)
     (src: list<char>)
-    : Result<list<Token>, list<string>> =
+    : Result<list<Token>, list<LexError>> =
     match src with
     | [] ->
         match state with
@@ -81,21 +82,24 @@ let rec private lex'
     | '-' :: cs ->
         match state with
         | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingMinus currentPos) cs
-        | ReadingMinus _ -> Error [ "Expected digits" ]
-        | ReadingI32Lit _ -> Error [ "Unexpected minus" ]
+        | ReadingMinus _ -> Error [ LexError("Expected digits", currentPos) ]
+        | ReadingI32Lit _ -> Error [ LexError("Unexpected minus", currentPos) ]
         | ReadingIdent (startPos, raw) ->
             lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + "-")) cs
 
     | Letter as c :: cs ->
         match state with
         | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(currentPos, string c)) cs
-        | ReadingMinus _ -> Error [ "Expected digits" ]
+        | ReadingMinus _ -> Error [ LexError("Expected digits", currentPos) ]
         | ReadingI32Lit _ ->
             let errors =
                 lex' lexOption (Pos.nextColumn currentPos) Initial cs
                 |> Result.defaultError []
 
-            Error("Expected digit, but letter found" :: errors)
+            Error(
+                LexError("Expected digit, but letter found", currentPos)
+                :: errors
+            )
         | ReadingIdent (startPos, raw) ->
             lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + string c)) cs
 
@@ -113,7 +117,10 @@ let rec private lex'
             lex' lexOption (Pos.nextColumn currentPos) Initial cs
             |> Result.defaultError []
 
-        Error("Unexpected character: " + string c :: errors)
+        Error(
+            LexError("Unexpected character: " + string c, currentPos)
+            :: errors
+        )
 
-let lex (lexOption: LexOption) (src: string) : Result<list<Token>, list<string>> =
+let lex (lexOption: LexOption) (src: string) : Result<list<Token>, list<LexError>> =
     lex' lexOption Pos.origin Initial (Seq.toList src)
