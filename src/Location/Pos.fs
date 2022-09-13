@@ -22,4 +22,22 @@ module Pos =
 #if !DEBUG
     inline
 #endif
+        nextLine (Pos (line, _)) = Pos(line + 1, 0)
+
+    let
+#if !DEBUG
+    inline
+#endif
+        nextColumn (Pos (line, column)) = Pos(line, column + 1)
+
+    let
+#if !DEBUG
+    inline
+#endif
+        previousColumn (Pos (line, column)) = Pos(line, column - 1)
+
+    let
+#if !DEBUG
+    inline
+#endif
         toJSON (pos: Pos) = pos |> string |> Encode.string

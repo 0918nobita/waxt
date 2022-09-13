@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Ident.fs" />
     <Compile Include="Paren.fs" />
+    <Compile Include="Bracket.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 
