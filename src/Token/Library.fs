@@ -1,6 +1,7 @@
 namespace Waxt.Token
 
 type Token =
+    | I32Lit of I32Lit
     | Ident of Ident
     | LeftParen of LeftParen
     | RightParen of RightParen
@@ -10,6 +11,7 @@ type Token =
 module Token =
     let toJSON (token: Token) =
         match token with
+        | I32Lit lit -> I32Lit.toJSON lit
         | Ident ident -> Ident.toJSON ident
         | LeftParen leftParen -> LeftParen.toJSON leftParen
         | RightParen rightParen -> RightParen.toJSON rightParen

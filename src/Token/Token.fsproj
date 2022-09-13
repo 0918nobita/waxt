@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="I32Lit.fs" />
     <Compile Include="Ident.fs" />
     <Compile Include="Paren.fs" />
     <Compile Include="Bracket.fs" />

@@ -1,5 +1,6 @@
 module Waxt.Lexer
 
+open FsToolkit.ErrorHandling
 open Waxt.Location
 open Waxt.Token
 
@@ -19,6 +20,18 @@ let private (|NewLine|_|) (LexOption eol) (cs: list<char>) =
 
 let private (|WhiteSpace|_|) c =
     if System.Char.IsWhiteSpace c then
+        Some()
+    else
+        None
+
+let private (|Digit|_|) c =
+    if System.Char.IsDigit c then
+        Some(int c - int '0')
+    else
+        None
+
+let private (|Letter|_|) c =
+    if System.Char.IsLetter c then
         Some()
     else
         None
@@ -43,54 +56,133 @@ let private (|CRightBracket|_|) =
     | ']' -> Some(fun pos -> Token.RightBracket(RightBracket pos))
     | _ -> None
 
+type LexState =
+    | Initial
+    | ReadingI32Lit of startPos: Pos * value: int
+    | ReadingIdent of startPos: Pos * raw: string
+
 let rec private lex'
     (lexOption: LexOption)
     (currentPos: Pos)
-    (strAcc: option<Pos * string>)
+    (state: LexState)
     (src: list<char>)
-    : list<Token> =
-    match strAcc, src with
-    | None, [] -> []
+    : Result<list<Token>, list<string>> =
+    match src with
+    | [] ->
+        match state with
+        | Initial -> Ok []
+        | ReadingI32Lit (startPos, n) ->
+            let end_ = Pos.previousColumn currentPos
+            Ok [ Token.I32Lit(I32Lit(n, Range.make startPos end_)) ]
+        | ReadingIdent (startPos, raw) ->
+            let end_ = Pos.previousColumn currentPos
+            Ok [ Token.Ident(Ident.make raw (Range.make startPos end_)) ]
 
-    | None, NewLine lexOption cs -> lex' lexOption (Pos.nextLine currentPos) None cs
+    | NewLine lexOption cs ->
+        match state with
+        | Initial -> lex' lexOption (Pos.nextLine currentPos) Initial cs
+        | ReadingI32Lit (startPos, n) ->
+            let end_ = Pos.previousColumn currentPos
 
-    | None, WhiteSpace :: cs -> lex' lexOption (Pos.nextColumn currentPos) None cs
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextLine currentPos) Initial cs
 
-    | None,
-      (CLeftParen makeTok
-      | CRightParen makeTok
-      | CLeftBracket makeTok
-      | CRightBracket makeTok) :: cs ->
-        makeTok currentPos
-        :: lex' lexOption (Pos.nextColumn currentPos) None cs
+                return
+                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    :: succeedingTokens
+            }
+        | ReadingIdent (startPos, raw) ->
+            let end_ = Pos.previousColumn currentPos
 
-    | None, c :: cs -> lex' lexOption (Pos.nextColumn currentPos) (Some(currentPos, string c)) cs
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextLine currentPos) Initial cs
 
-    | Some (startPos, str), [] -> [ Token.Ident(Ident.make str (Range.make startPos currentPos)) ]
+                return
+                    Token.Ident(Ident.make raw (Range.make startPos end_))
+                    :: succeedingTokens
+            }
 
-    | Some (startPos, str), NewLine lexOption cs ->
-        let succeedingTokens = lex' lexOption (Pos.nextLine currentPos) None cs
+    | WhiteSpace :: cs ->
+        match state with
+        | Initial -> lex' lexOption (Pos.nextColumn currentPos) Initial cs
+        | ReadingI32Lit (startPos, n) ->
+            let end_ = Pos.previousColumn currentPos
 
-        Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
-        :: succeedingTokens
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
 
-    | Some (startPos, str), WhiteSpace :: cs ->
-        let succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) None cs
+                return
+                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    :: succeedingTokens
+            }
+        | ReadingIdent (startPos, raw) ->
+            let end_ = Pos.previousColumn currentPos
 
-        Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
-        :: succeedingTokens
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
 
-    | Some (startPos, str),
-      (CLeftParen makeTok
-      | CRightParen makeTok
-      | CLeftBracket makeTok
-      | CRightBracket makeTok) :: cs ->
-        let succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) None cs
+                return
+                    Token.Ident(Ident.make raw (Range.make startPos end_))
+                    :: succeedingTokens
+            }
 
-        Token.Ident(Ident.make str (Range.make startPos (Pos.previousColumn currentPos)))
-        :: makeTok currentPos :: succeedingTokens
+    | (CLeftParen makeTok
+    | CRightParen makeTok
+    | CLeftBracket makeTok
+    | CRightBracket makeTok) :: cs ->
+        match state with
+        | Initial ->
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
+                return makeTok currentPos :: succeedingTokens
+            }
+        | ReadingI32Lit (startPos, n) ->
+            let end_ = Pos.previousColumn currentPos
 
-    | Some (startPos, str), c :: cs -> lex' lexOption (Pos.nextColumn currentPos) (Some(startPos, str + string c)) cs
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
 
-let lex (lexOption: LexOption) (src: string) : list<Token> =
-    lex' lexOption Pos.origin None (Seq.toList src)
+                return
+                    Token.I32Lit(I32Lit(n, Range.make startPos end_))
+                    :: makeTok currentPos :: succeedingTokens
+            }
+        | ReadingIdent (startPos, raw) ->
+            let end_ = Pos.previousColumn currentPos
+
+            result {
+                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
+
+                return
+                    Token.Ident(Ident.make raw (Range.make startPos end_))
+                    :: makeTok currentPos :: succeedingTokens
+            }
+
+    | Letter as c :: cs ->
+        match state with
+        | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(currentPos, string c)) cs
+        | ReadingI32Lit _ ->
+            let errors =
+                lex' lexOption (Pos.nextColumn currentPos) Initial cs
+                |> Result.defaultError []
+
+            Error("Expected digit, but letter found" :: errors)
+        | ReadingIdent (startPos, raw) ->
+            lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + string c)) cs
+
+    | Digit n :: cs ->
+        match state with
+        | Initial -> lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(currentPos, n)) cs
+        | ReadingI32Lit (startPos, n') ->
+            lex' lexOption (Pos.nextColumn currentPos) (ReadingI32Lit(startPos, n' * 10 + n)) cs
+        | ReadingIdent (startPos, raw) ->
+            lex' lexOption (Pos.nextColumn currentPos) (ReadingIdent(startPos, raw + string n)) cs
+
+    | c :: cs ->
+        let errors =
+            lex' lexOption (Pos.nextColumn currentPos) Initial cs
+            |> Result.defaultError []
+
+        Error("Unexpected character: " + string c :: errors)
+
+let lex (lexOption: LexOption) (src: string) : Result<list<Token>, list<string>> =
+    lex' lexOption Pos.origin Initial (Seq.toList src)

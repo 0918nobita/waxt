@@ -8,8 +8,14 @@ open Waxt.Token
 
 [<Test>]
 let Test1 () =
-    let tokens = lex (LexOption Lf) "(foo bar baz)"
-    SnapshotTest.VerifyJSON(tokens |> List.map Token.toJSON |> Encode.list)
+    let tokens = lex (LexOption Lf) "(foo 12 bar)"
+
+    SnapshotTest.VerifyJSON(
+        tokens
+        |> wantOk
+        |> List.map Token.toJSON
+        |> Encode.list
+    )
 
 [<EntryPoint>]
 let main _ = 0
