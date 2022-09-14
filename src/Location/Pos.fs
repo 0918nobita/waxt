@@ -20,6 +20,10 @@ type Pos =
 module Pos =
     let make line column = Pos(line, column)
 
+    let line (Pos (line, _)) = line
+
+    let column (Pos (_, column)) = column
+
     let origin = Pos(0, 0)
 
     let nextLine (Pos (line, _)) = Pos(line + 1, 0)
