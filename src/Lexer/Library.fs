@@ -11,12 +11,23 @@ open State
 let private makeI32Lit (neg: bool) (abs: int) (start: Pos) (end_: Pos) =
     Token.I32Lit(I32Lit((if neg then -abs else abs), Range.make start end_))
 
-let private extractToken (state: LexState) (end_: Pos) : Result<Token, list<LexError>> =
+let private foldStateExtractingToken
+    (currentPos: Pos)
+    (state: LexState)
+    (ifInitial: unit -> Result<'t, list<LexError>>)
+    (ifOthers: Token -> Result<'t, list<LexError>>)
+    =
     match state with
-    | Initial -> failwith "unreachable"
-    | ReadingMinus _ -> Error [ LexError("Expected digit(s) after minus", end_) ]
-    | ReadingI32Lit (startPos, abs, neg) -> Ok(makeI32Lit neg abs startPos end_)
-    | ReadingIdent (startPos, raw) -> Ok(Token.Ident(Ident.make raw (Range.make startPos end_)))
+    | Initial -> ifInitial ()
+    | ReadingMinus _ ->
+        let end_ = Pos.previousColumn currentPos
+        Error [ LexError("Expected digit(s) after minus", end_) ]
+    | ReadingI32Lit (startPos, abs, neg) ->
+        let end_ = Pos.previousColumn currentPos
+        ifOthers (makeI32Lit neg abs startPos end_)
+    | ReadingIdent (startPos, raw) ->
+        let end_ = Pos.previousColumn currentPos
+        ifOthers (Token.Ident(Ident.make raw (Range.make startPos end_)))
 
 let rec private lex'
     (lexOption: LexOption)
@@ -25,59 +36,47 @@ let rec private lex'
     (src: list<char>)
     : Result<list<Token>, list<LexError>> =
     match src with
-    | [] ->
-        match state with
-        | Initial -> Ok []
-        | _ ->
-            let end_ = Pos.previousColumn currentPos
-
-            result {
-                let! token = extractToken state end_
-                return [ token ]
-            }
+    | [] -> foldStateExtractingToken currentPos state (fun () -> Ok []) (fun token -> Ok [ token ])
 
     | NewLine lexOption cs ->
-        match state with
-        | Initial -> lex' lexOption (Pos.nextLine currentPos) state cs
-        | _ ->
-            let end_ = Pos.previousColumn currentPos
-
-            result {
-                let! token = extractToken state end_
-                let! succeedingTokens = lex' lexOption (Pos.nextLine currentPos) Initial cs
-                return token :: succeedingTokens
-            }
+        foldStateExtractingToken
+            currentPos
+            state
+            (fun () -> lex' lexOption (Pos.nextLine currentPos) state cs)
+            (fun token ->
+                result {
+                    let! succeedingTokens = lex' lexOption (Pos.nextLine currentPos) Initial cs
+                    return token :: succeedingTokens
+                })
 
     | WhiteSpace :: cs ->
-        match state with
-        | Initial -> lex' lexOption (Pos.nextColumn currentPos) Initial cs
-        | _ ->
-            let end_ = Pos.previousColumn currentPos
-
-            result {
-                let! token = extractToken state end_
-                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
-                return token :: succeedingTokens
-            }
+        foldStateExtractingToken
+            currentPos
+            state
+            (fun () -> lex' lexOption (Pos.nextColumn currentPos) Initial cs)
+            (fun token ->
+                result {
+                    let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
+                    return token :: succeedingTokens
+                })
 
     | (CLeftParen makeTok
     | CRightParen makeTok
     | CLeftBracket makeTok
     | CRightBracket makeTok) :: cs ->
-        match state with
-        | Initial ->
-            result {
-                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
-                return makeTok currentPos :: succeedingTokens
-            }
-        | _ ->
-            let end_ = Pos.previousColumn currentPos
-
-            result {
-                let! token = extractToken state end_
-                let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
-                return token :: makeTok currentPos :: succeedingTokens
-            }
+        foldStateExtractingToken
+            currentPos
+            state
+            (fun () ->
+                result {
+                    let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
+                    return makeTok currentPos :: succeedingTokens
+                })
+            (fun token ->
+                result {
+                    let! succeedingTokens = lex' lexOption (Pos.nextColumn currentPos) Initial cs
+                    return token :: makeTok currentPos :: succeedingTokens
+                })
 
     | '-' :: cs ->
         match state with
