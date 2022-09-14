@@ -3,6 +3,10 @@ version: '3'
 includes:
   coverage: ./Taskfile_{{OS}}.yml
 
+  playground:
+    taskfile: ./playground/Taskfile.yml
+    dir: ./playground
+
 tasks:
   tool-restore: dotnet tool restore
 

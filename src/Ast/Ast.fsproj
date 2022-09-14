@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Waxt.Ast</AssemblyName>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="TypeLiteral.fs" />
     <Compile Include="ExprAbst.fs" />
@@ -12,9 +13,11 @@
     <Compile Include="IfExpr.fs" />
     <Compile Include="ExprImpl.fs" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Token\Token.fsproj" />
     <ProjectReference Include="..\Type\Type.fsproj" />
   </ItemGroup>
+
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

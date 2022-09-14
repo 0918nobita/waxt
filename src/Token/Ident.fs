@@ -1,6 +1,10 @@
 namespace Waxt.Token
 
+#if FABLE_COMPILER
+open Thoth.Json
+#else
 open Thoth.Json.Net
+#endif
 open Waxt.Location
 
 type Ident = private Ident of raw: string * at: Range

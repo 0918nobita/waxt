@@ -1,6 +1,10 @@
 namespace Waxt.Ast
 
+#if FABLE_COMPILER
+open Thoth.Json
+#else
 open Thoth.Json.Net
+#endif
 
 [<RequireQualifiedAccess>]
 type TypeLiteral =

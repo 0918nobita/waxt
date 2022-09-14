@@ -1,4 +1,4 @@
-module private Waxt.Lexer.CharPattern
+module Waxt.Lexer.CharPattern
 
 open Waxt.Token
 
@@ -29,20 +29,20 @@ let (|Letter|_|) c =
 
 let (|CLeftParen|_|) =
     function
-    | '(' -> Some(fun pos -> Token.LeftParen(LeftParen pos))
+    | '(' -> Some(fun pos -> Token.LeftParen(LeftParen.make pos))
     | _ -> None
 
 let (|CRightParen|_|) =
     function
-    | ')' -> Some(fun pos -> Token.RightParen(RightParen pos))
+    | ')' -> Some(fun pos -> Token.RightParen(RightParen.make pos))
     | _ -> None
 
 let (|CLeftBracket|_|) =
     function
-    | '[' -> Some(fun pos -> Token.LeftBracket(LeftBracket pos))
+    | '[' -> Some(fun pos -> Token.LeftBracket(LeftBracket.make pos))
     | _ -> None
 
 let (|CRightBracket|_|) =
     function
-    | ']' -> Some(fun pos -> Token.RightBracket(RightBracket pos))
+    | ']' -> Some(fun pos -> Token.RightBracket(RightBracket.make pos))
     | _ -> None

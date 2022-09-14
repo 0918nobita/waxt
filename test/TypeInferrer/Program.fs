@@ -34,38 +34,38 @@ let Test1 () =
                 (Ident.make "if" at)
                 (I32Eqz(
                     Parenthesized.make
-                        (LeftParen pos)
+                        (LeftParen.make pos)
                         {| Ident = Ident.make "i32_eqz" at
                            Arg = Var(n, ref None) |}
-                        (RightParen pos)
+                        (RightParen.make pos)
                 ))
-                (Block.make (LeftParen pos) [ I32Const(1, at) ] (RightParen pos))
+                (Block.make (LeftParen.make pos) [ I32Const(1, at) ] (RightParen.make pos))
                 (Block.make
-                    (LeftParen pos)
+                    (LeftParen.make pos)
                     [ I32Mul(
                           Parenthesized.make
-                              (LeftParen pos)
+                              (LeftParen.make pos)
                               {| Ident = Ident.make "i32_mul" at
                                  Lhs = Var(n, ref None)
                                  Rhs =
                                   Application(
                                       Parenthesized.make
-                                          (LeftParen pos)
+                                          (LeftParen.make pos)
                                           {| FuncName = fact
                                              Args =
                                               [ I32Sub(
                                                     Parenthesized.make
-                                                        (LeftParen pos)
+                                                        (LeftParen.make pos)
                                                         {| Ident = Ident.make "i32_sub" at
                                                            Lhs = Var(n, ref None)
                                                            Rhs = I32Const(1, at) |}
-                                                        (RightParen pos)
+                                                        (RightParen.make pos)
                                                 ) ] |}
-                                          (RightParen pos)
+                                          (RightParen.make pos)
                                   ) |}
-                              (RightParen pos)
+                              (RightParen.make pos)
                       ) ]
-                    (RightParen pos))
+                    (RightParen.make pos))
         )
 
     let (simulEquation, _ty) = extract funcContext varContext expr |> wantOk

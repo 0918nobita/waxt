@@ -9,7 +9,7 @@ open CharPattern
 open State
 
 let private makeI32Lit (neg: bool) (abs: int) (start: Pos) (end_: Pos) =
-    Token.I32Lit(I32Lit((if neg then -abs else abs), Range.make start end_))
+    Token.I32Lit(I32Lit.make (if neg then -abs else abs) (Range.make start end_))
 
 let private foldStateExtractingToken
     (currentPos: Pos)

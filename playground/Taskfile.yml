@@ -1,0 +1,19 @@
+version: '3'
+
+tasks:
+  prepare: pnpm i
+
+  build:
+    cmds:
+      - dotnet fable ./src/Playground -o fable-out
+      - pnpm exec vite build
+
+  fable-watch: dotnet fable watch ./src/Playground -o fable-out
+
+  vite-watch: pnpm exec vite --clearScreen false
+
+  watch:
+    deps: [fable-watch, vite-watch]
+
+  default:
+    - task: watch
