@@ -1,8 +1,26 @@
 :root {
     color: rgba(255, 255, 255, 0.87);
     background-color: #242424;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-#error {
+.error {
     text-decoration: underline wavy red;
+}
+
+.error-tooltip {
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    padding: 5px;
+    border: 1px solid #E0E0E0;
+    background-color: #202020;
+    transform: translate(30px, 30px);
+}
+
+.error:hover .error-tooltip {
+    opacity: 1;
+    visibility: visible;
 }
