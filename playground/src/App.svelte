@@ -36,6 +36,47 @@
             range.startContainer.remove();
         }
     };
+
+    let timer;
+    const keyupHandler = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            // window.getSelection().getRangeAt(0) をもとに現在のカーソル位置を計算する
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+
+            const nodes: Node[] = [];
+            for (const childNode of [...editorElement.childNodes]) {
+                if (childNode.isEqualNode(range.endContainer)) {
+                    break;
+                } else {
+                    nodes.push(childNode);
+                }
+            }
+
+            console.log(
+                nodes.reduce((acc, node) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        return acc + node.textContent.length;
+                    } else if (
+                        node instanceof Element &&
+                        node.classList.contains("error")
+                    ) {
+                        return acc + node.childNodes.item(1).textContent.length;
+                    } else {
+                        return acc;
+                    }
+                }, 0) // + range.endOffset
+            );
+
+            console.log({
+                rangeEndOffset: range.endOffset,
+                startContainer: range.startContainer,
+            });
+            // executeLexer();
+            // カーソル位置を復元する
+        }, 750);
+    };
 </script>
 
 <main>
@@ -47,6 +88,7 @@
         spellcheck="false"
         bind:this={editorElement}
         on:keydown={keydownHandler}
+        on:keyup={keyupHandler}
     />
 
     <button id="executeButton" on:click={executeLexer}>Execute lexer</button>
