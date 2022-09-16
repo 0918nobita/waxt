@@ -2,105 +2,85 @@
     import { onMount } from "svelte";
 
     import { lexicalAnalysis } from "../fable-out/Program.js";
+    import { insertErrorMessages } from "./insertErrorMessages.js";
     import type { LexError } from "./lexerType";
-    import { insertErrorMessages } from "./insertErrorMessages";
 
-    let editorElement: HTMLDivElement = null;
+    let editorElement: HTMLTextAreaElement = null;
+    let srcHtml = "";
 
     onMount(() => {
-        editorElement.innerHTML = `(add 3 4)`;
+        editorElement.value = srcHtml = `(add 3 4)`;
     });
 
-    const executeLexer = () => {
-        const src = editorElement.innerText;
+    const executeLexer = (): LexError[] => {
+        const src = editorElement.value;
 
-        const errors: LexError[] = (
-            lexicalAnalysis(src) as Array<[string, number, number]>
-        ).map(([msg, line, col]) => [msg, line, col, line, col]);
-
-        if (errors.length > 0) console.error(errors);
-
-        editorElement.innerHTML = insertErrorMessages(src, errors);
-    };
-
-    const keydownHandler = (event: KeyboardEvent) => {
-        if (event.key !== "Backspace") return;
-
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-
-        if (
-            range.startContainer instanceof Element &&
-            range.startContainer.classList.contains("error")
-        ) {
-            range.startContainer.remove();
-        }
+        return (lexicalAnalysis(src) as Array<[string, number, number]>).map(
+            ([msg, line, col]) => [msg, line, col, line, col]
+        );
     };
 
     let timer;
     const keyupHandler = () => {
         clearTimeout(timer);
         timer = setTimeout(() => {
-            // window.getSelection().getRangeAt(0) をもとに現在のカーソル位置を計算する
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0);
-
-            const nodes: Node[] = [];
-            for (const childNode of [...editorElement.childNodes]) {
-                if (childNode.isEqualNode(range.endContainer)) {
-                    break;
-                } else {
-                    nodes.push(childNode);
-                }
-            }
-
-            console.log(
-                nodes.reduce((acc, node) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        return acc + node.textContent.length;
-                    } else if (
-                        node instanceof Element &&
-                        node.classList.contains("error")
-                    ) {
-                        return acc + node.childNodes.item(1).textContent.length;
-                    } else {
-                        return acc;
-                    }
-                }, 0) // + range.endOffset
-            );
-
-            console.log({
-                rangeEndOffset: range.endOffset,
-                startContainer: range.startContainer,
-            });
-            // executeLexer();
-            // カーソル位置を復元する
+            srcHtml = insertErrorMessages(editorElement.value, executeLexer());
         }, 750);
+    };
+
+    const inputHandler = () => {
+        srcHtml = editorElement.value;
     };
 </script>
 
 <main>
     <h1>WAXT Playground</h1>
 
-    <div
-        id="editor"
-        contenteditable="true"
-        spellcheck="false"
-        bind:this={editorElement}
-        on:keydown={keydownHandler}
-        on:keyup={keyupHandler}
-    />
-
-    <button id="executeButton" on:click={executeLexer}>Execute lexer</button>
+    <div id="editorContainer">
+        <pre id="highlighted"><code>{@html srcHtml}</code></pre>
+        <textarea
+            id="editor"
+            spellcheck="false"
+            aria-hidden="true"
+            bind:this={editorElement}
+            on:keyup={keyupHandler}
+            on:input={inputHandler}
+        />
+    </div>
 </main>
 
 <style>
     #editor {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
         padding: 10px;
-        border: 1px solid #ccc;
+        resize: none;
+        background: transparent;
+        color: transparent;
+        font-family: monospace;
+        border: none;
+        caret-color: #ccc;
     }
 
-    #executeButton {
+    #highlighted {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        padding: 10px;
+        color: #ccc;
+        font-family: monospace;
+    }
+
+    #editorContainer {
+        position: relative;
         margin: 10px;
+        padding: 10px;
     }
 </style>
