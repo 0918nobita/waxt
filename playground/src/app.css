@@ -21,9 +21,16 @@
     border: 1px solid #E0E0E0;
     background-color: #202020;
     transform: translate(30px, 30px);
+    white-space: nowrap;
 }
 
-.error:hover .error-tooltip {
+.filter {
+    position: absolute;
+    background: rgba(255, 0, 0, 0.3);
+    z-index: 3;
+}
+
+.filter:hover .error-tooltip {
     opacity: 1;
     visibility: visible;
 }

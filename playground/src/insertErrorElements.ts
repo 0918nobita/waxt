@@ -1,6 +1,6 @@
 import type { LexError, Line, Part } from "./lexerType";
 
-export const insertErrorMessages = (
+export const insertErrorElements = (
     src: string,
     errors: LexError[]
 ): string => {
@@ -65,13 +65,6 @@ export const insertErrorMessages = (
         partsPerLine.push(parts);
     }
 
-    const getErrorMsg = (errorIndex: number): string => {
-        const [msg, startPos, startCol, endPos, endCol] = errors[errorIndex];
-        return `${msg} (${startPos + 1}:${startCol + 1} - ${endPos + 1}:${
-            endCol + 1
-        })`;
-    };
-
     return partsPerLine
         .map((parts) =>
             parts
@@ -79,11 +72,8 @@ export const insertErrorMessages = (
                     if (part.type == "ok") {
                         return part.src;
                     } else {
-                        const errorMsgs = part.errorIndices
-                            .map(getErrorMsg)
-                            .join("<br>");
-                        const errorTooltip = `<span class="error-tooltip">${errorMsgs}</span>`;
-                        return `<span class="error">${errorTooltip}${part.src}</span>`;
+                        const errorIndices = part.errorIndices.toString();
+                        return `<span class="error" data-error-indices="${errorIndices}">${part.src}</span>`;
                     }
                 })
                 .join("")

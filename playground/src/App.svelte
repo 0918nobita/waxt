@@ -2,14 +2,15 @@
     import { onMount } from "svelte";
 
     import { lexicalAnalysis } from "../fable-out/Program.js";
-    import { insertErrorMessages } from "./insertErrorMessages.js";
+    import { insertErrorElements } from "./insertErrorElements.js";
     import type { LexError } from "./lexerType";
 
     let editorElement: HTMLTextAreaElement = null;
-    let srcHtml = "";
+    let highlighted: HTMLElement = null;
+    let filters: HTMLDivElement = null;
 
     onMount(() => {
-        editorElement.value = srcHtml = `(add 3 4)`;
+        editorElement.value = highlighted.innerHTML = `(add 3 4)`;
     });
 
     const executeLexer = (): LexError[] => {
@@ -24,12 +25,52 @@
     const keyupHandler = () => {
         clearTimeout(timer);
         timer = setTimeout(() => {
-            srcHtml = insertErrorMessages(editorElement.value, executeLexer());
+            const errors = executeLexer();
+
+            const getErrorMsg = (errorIndex: number): string => {
+                const [msg, startPos, startCol, endPos, endCol] =
+                    errors[errorIndex];
+                return `${msg} (${startPos + 1}:${startCol + 1} - ${
+                    endPos + 1
+                }:${endCol + 1})`;
+            };
+
+            highlighted.innerHTML = insertErrorElements(
+                editorElement.value,
+                errors
+            );
+            filters.innerHTML = "";
+            for (const errorElement of [
+                ...highlighted.querySelectorAll(".error"),
+            ]) {
+                const errorIndices = (
+                    errorElement as HTMLElement
+                ).dataset.errorIndices
+                    .split(",")
+                    .map(parseInt);
+
+                const rect = errorElement.getBoundingClientRect();
+
+                const filter = document.createElement("div");
+                filter.classList.add("filter");
+                filter.style.top = `${rect.y}px`;
+                filter.style.left = `${rect.x}px`;
+                filter.style.width = `${rect.width}px`;
+                filter.style.height = `${rect.height}px`;
+
+                const tooltip = document.createElement("div");
+                tooltip.classList.add("error-tooltip");
+                tooltip.innerHTML = errorIndices.map(getErrorMsg).join("<br>");
+
+                filter.appendChild(tooltip);
+
+                filters.appendChild(filter);
+            }
         }, 750);
     };
 
     const inputHandler = () => {
-        srcHtml = editorElement.value;
+        highlighted.innerHTML = editorElement.value;
     };
 </script>
 
@@ -37,7 +78,7 @@
     <h1>WAXT Playground</h1>
 
     <div id="editorContainer">
-        <pre id="highlighted"><code>{@html srcHtml}</code></pre>
+        <pre id="highlighted"><code bind:this={highlighted} /></pre>
         <textarea
             id="editor"
             spellcheck="false"
@@ -47,6 +88,8 @@
             on:input={inputHandler}
         />
     </div>
+
+    <div id="filters" bind:this={filters} />
 </main>
 
 <style>
