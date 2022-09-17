@@ -25,7 +25,7 @@ const registerErrorIndices = (
     }
 };
 
-const getPartsPerLine = (lines: Line[]): Array<Part[]> => {
+const getPartsPerLine = (lines: ReadonlyArray<Line>): Array<Part[]> => {
     const partsPerLine: Array<Part[]> = [];
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -71,26 +71,10 @@ const getPartsPerLine = (lines: Line[]): Array<Part[]> => {
     return partsPerLine;
 };
 
-export const insertErrorElements = (
-    src: string,
-    errors: LexError[]
-): string => {
+export const getParts = (src: string, errors: LexError[]): Array<Part[]> => {
     let lines = splitPerLine(src);
 
     registerErrorIndices(lines, errors);
 
-    return getPartsPerLine(lines)
-        .map((parts) =>
-            parts
-                .map((part) => {
-                    if (part.type == "ok") {
-                        return part.src;
-                    } else {
-                        const errorIndices = part.errorIndices.toString();
-                        return `<span class="error" data-error-indices="${errorIndices}">${part.src}</span>`;
-                    }
-                })
-                .join("")
-        )
-        .join("<br>");
+    return getPartsPerLine(lines);
 };

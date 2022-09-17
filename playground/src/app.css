@@ -13,24 +13,9 @@
     text-decoration: underline wavy red;
 }
 
-.error-tooltip {
-    position: absolute;
-    opacity: 0;
-    visibility: hidden;
-    padding: 5px;
-    border: 1px solid #E0E0E0;
-    background-color: #202020;
-    transform: translate(30px, 30px);
-    white-space: nowrap;
-}
-
 .filter {
     position: absolute;
     background: rgba(255, 0, 0, 0.3);
     z-index: 3;
-}
-
-.filter:hover .error-tooltip {
-    opacity: 1;
-    visibility: visible;
+    pointer-events: none;
 }
