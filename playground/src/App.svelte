@@ -4,6 +4,7 @@
     import { lexicalAnalysis } from "../fable-out/Program.js";
     import { insertErrorElements } from "./insertErrorElements.js";
     import type { LexError } from "./lexerType";
+    import { stringifyLexError } from "./stringifyLexError.js";
 
     let editorElement: HTMLTextAreaElement = null;
     let highlighted: HTMLElement = null;
@@ -27,19 +28,13 @@
         timer = setTimeout(() => {
             const errors = executeLexer();
 
-            const getErrorMsg = (errorIndex: number): string => {
-                const [msg, startPos, startCol, endPos, endCol] =
-                    errors[errorIndex];
-                return `${msg} (${startPos + 1}:${startCol + 1} - ${
-                    endPos + 1
-                }:${endCol + 1})`;
-            };
-
             highlighted.innerHTML = insertErrorElements(
                 editorElement.value,
                 errors
             );
+
             filters.innerHTML = "";
+
             for (const errorElement of [
                 ...highlighted.querySelectorAll(".error"),
             ]) {
@@ -60,7 +55,9 @@
 
                 const tooltip = document.createElement("div");
                 tooltip.classList.add("error-tooltip");
-                tooltip.innerHTML = errorIndices.map(getErrorMsg).join("<br>");
+                tooltip.innerHTML = errorIndices
+                    .map((errorIndex) => stringifyLexError(errors, errorIndex))
+                    .join("<br>");
 
                 filter.appendChild(tooltip);
 

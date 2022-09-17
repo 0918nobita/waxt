@@ -1,10 +1,7 @@
 import type { LexError, Line, Part } from "./lexerType";
 
-export const insertErrorElements = (
-    src: string,
-    errors: LexError[]
-): string => {
-    let lines = [...src].reduce(
+const splitPerLine = (src: string): Line[] =>
+    [...src].reduce(
         (lines: Line[], c: string) =>
             c === "\n"
                 ? [...lines, []]
@@ -15,6 +12,10 @@ export const insertErrorElements = (
         [[]]
     );
 
+const registerErrorIndices = (
+    lines: Line[],
+    errors: ReadonlyArray<LexError>
+) => {
     for (let i = 0; i < errors.length; i++) {
         const [_, startLine, startCol, endLine, endCol] = errors[i];
 
@@ -22,7 +23,9 @@ export const insertErrorElements = (
             for (let col = startCol; col <= endCol; col++)
                 lines[line][col].errorIndices.push(i);
     }
+};
 
+const getPartsPerLine = (lines: Line[]): Array<Part[]> => {
     const partsPerLine: Array<Part[]> = [];
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -65,7 +68,18 @@ export const insertErrorElements = (
         partsPerLine.push(parts);
     }
 
-    return partsPerLine
+    return partsPerLine;
+};
+
+export const insertErrorElements = (
+    src: string,
+    errors: LexError[]
+): string => {
+    let lines = splitPerLine(src);
+
+    registerErrorIndices(lines, errors);
+
+    return getPartsPerLine(lines)
         .map((parts) =>
             parts
                 .map((part) => {
