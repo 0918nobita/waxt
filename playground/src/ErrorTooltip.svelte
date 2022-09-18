@@ -4,16 +4,11 @@
     export let state: TooltipState;
 </script>
 
-<main>
-    {#if state.type === "visible"}
-        <div
-            class="error-tooltip"
-            style={`top: ${state.y}px; left: ${state.x}px`}
-        >
-            {@html state.msg}
-        </div>
-    {/if}
-</main>
+{#if state.type === "visible"}
+    <div class="error-tooltip" style={`top: ${state.y}px; left: ${state.x}px`}>
+        {@html state.msg}
+    </div>
+{/if}
 
 <style>
     .error-tooltip {
