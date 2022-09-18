@@ -21,13 +21,14 @@
 
     let errorRanges: ErrorRangeWithMsg[] = [];
 
+    let numLines = 1;
+
     let editorElement: HTMLTextAreaElement = null;
     let highlighted: HTMLElement = null;
     let filters: HTMLDivElement = null;
+    let lineNumbersElement: HTMLDivElement = null;
 
     onMount(() => {
-        editorElement.value = highlighted.innerHTML = `(add 3 4)`;
-
         let handler = (e: MouseEvent) => {
             const msgs = errorRanges.flatMap((errorRange) => {
                 if (
@@ -51,8 +52,8 @@
                 tooltipState = {
                     type: "visible",
                     msg: msgs.join("<br>"),
-                    x: e.pageX,
-                    y: e.pageY,
+                    x: e.pageX + 10,
+                    y: e.pageY + 10,
                 };
             }
         };
@@ -123,22 +124,52 @@
 
     const inputHandler = () => {
         highlighted.innerHTML = editorElement.value;
+        const matches = editorElement.value.match(/\n/g);
+        if (matches !== null) {
+            numLines = matches.length + 1;
+        } else {
+            numLines = 1;
+        }
     };
+
+    $: {
+        if (lineNumbersElement !== null) {
+            const lineHeight = parseFloat(
+                window.getComputedStyle(
+                    document.getElementsByClassName("line-number").item(0)
+                ).height
+            );
+            const height = `calc(${lineHeight * (numLines - 1)}px + 100%)`;
+            editorElement.style.height = height;
+            lineNumbersElement.style.height = height;
+        }
+    }
 </script>
 
 <main>
-    <h1>WAXT Playground</h1>
+    <div id="page">
+        <h2>WAXT Playground</h2>
 
-    <div id="editorContainer">
-        <pre id="highlighted"><code bind:this={highlighted} /></pre>
-        <textarea
-            id="editor"
-            spellcheck="false"
-            aria-hidden="true"
-            bind:this={editorElement}
-            on:keyup={keyupHandler}
-            on:input={inputHandler}
-        />
+        <div id="editorContainer">
+            <div>
+                <div id="lineNumbers" bind:this={lineNumbersElement}>
+                    {#each Array(numLines) as _, i}
+                        <div class="line-number">{i + 1}</div>
+                    {/each}
+                </div>
+            </div>
+            <div id="editableArea">
+                <pre id="highlighted"><code bind:this={highlighted} /></pre>
+                <textarea
+                    id="editor"
+                    spellcheck="false"
+                    aria-hidden="true"
+                    bind:this={editorElement}
+                    on:keyup={keyupHandler}
+                    on:input={inputHandler}
+                />
+            </div>
+        </div>
     </div>
 
     <div id="filters" bind:this={filters} />
@@ -153,13 +184,14 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100vh;
-        padding: 10px;
+        min-height: 100%;
         resize: none;
+        overflow-y: hidden;
         background: transparent;
         color: transparent;
         font-family: monospace;
         border: none;
+        outline: none;
         caret-color: #ccc;
     }
 
@@ -169,15 +201,37 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100vh;
-        padding: 10px;
         color: #ccc;
         font-family: monospace;
     }
 
-    #editorContainer {
+    #lineNumbers {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-family: monospace;
+        border-right: 1px solid #ccc;
+        min-height: 100%;
+    }
+
+    #lineNumbers div {
+        display: inline-block;
+    }
+
+    #editableArea {
         position: relative;
-        margin: 10px;
-        padding: 10px;
+        width: 100%;
+    }
+
+    #editorContainer {
+        display: flex;
+        height: 100%;
+        overflow-y: scroll;
+    }
+
+    #page {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
     }
 </style>
