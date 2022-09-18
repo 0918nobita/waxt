@@ -13,7 +13,7 @@
     text-decoration: underline wavy red;
 }
 
-.filter {
+.error-marker {
     position: absolute;
     background: rgba(255, 0, 0, 0.3);
     z-index: 3;
